@@ -687,6 +687,33 @@ body {
   .disciplina-row { grid-template-columns: 1fr 65px auto; }
 }
 
+
+/* PROGRESS BAR */
+.progress-bar-wrap{background:var(--surface3);border-radius:10px;height:8px;overflow:hidden;margin-top:6px}
+.progress-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--navy),var(--navy2));transition:width 0.6s ease}
+/* SIMULADO CARD */
+.simulado-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;transition:all 0.2s}
+.simulado-card:hover{background:white;box-shadow:var(--shadow)}
+.simulado-nota{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--navy)}
+.simulado-meta{font-size:11px;color:var(--text3);margin-top:4px}
+/* CHECKLIST */
+.checklist{display:flex;flex-direction:column;gap:8px}
+.checklist-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);transition:all 0.18s;cursor:pointer}
+.checklist-item:hover{background:white;box-shadow:var(--shadow)}
+.checklist-item.checked{opacity:0.6}
+.checklist-item.checked .checklist-label{text-decoration:line-through;color:var(--text3)}
+.check-box{width:18px;height:18px;border-radius:4px;border:2px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.18s;font-size:11px;color:white}
+.check-box.checked{background:var(--navy);border-color:var(--navy)}
+.checklist-label{font-size:13px;color:var(--text);flex:1;line-height:1.4}
+/* GCAL */
+.gcal-btn{background:white;border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;color:var(--text);transition:all 0.18s;text-decoration:none}
+.gcal-btn:hover{border-color:var(--navy);color:var(--navy)}
+/* PWA BANNER */
+.pwa-banner{background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;padding:12px 20px;display:none;align-items:center;gap:12px;font-size:13px;position:fixed;bottom:0;left:0;right:0;z-index:500;box-shadow:0 -4px 20px rgba(26,35,64,0.2)}
+.pwa-banner.show{display:flex}
+.pwa-banner .pwa-btn{background:white;color:var(--navy);border:none;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
+.pwa-banner .pwa-dismiss{background:transparent;border:none;color:rgba(255,255,255,0.6);font-size:18px;cursor:pointer;padding:4px 8px}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--surface3); }
@@ -697,6 +724,14 @@ body {
 <body>
 
 <!-- HEADER -->
+<!-- PWA Banner -->
+<div class="pwa-banner" id="pwaBanner">
+  <span style="font-size:20px">📱</span>
+  <span style="flex:1">Instale o <strong>ConcursosPro</strong> no seu dispositivo para acesso rápido!</span>
+  <button class="pwa-btn" onclick="installPWA()">Instalar App</button>
+  <button class="pwa-dismiss" onclick="document.getElementById('pwaBanner').classList.remove('show')">✕</button>
+</div>
+
 <header class="header">
   <div class="header-inner">
     <div class="logo" onclick="goHome()">
@@ -723,6 +758,9 @@ body {
       </button>
       <button class="nav-tab" data-page="realizados" onclick="switchPage('realizados',this)">
         ✅ <span class="tab-label">Realizados</span>
+      </button>
+      <button class="nav-tab" data-page="estudos" onclick="switchPage('estudos',this)">
+        📚 <span class="tab-label">Estudos</span>
       </button>
     </nav>
 
@@ -751,7 +789,8 @@ body {
       <p class="section-subtitle">Visão completa da sua preparação para concursos</p>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-gold btn-sm" onclick="switchPage('previstos',document.querySelector('[data-page=previstos]'))">+ Novo Concurso</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportarPDF()">📤 Exportar PDF</button>
+      <button class="btn btn-gold btn-sm" onclick="switchPage('previstos',document.querySelector('[data-page=previstos]'));openModalNovo()">+ Novo Concurso</button>
       <button class="btn btn-secondary btn-sm" onclick="openModalRealizado()">+ Registrar Prova</button>
     </div>
   </div>
@@ -786,12 +825,19 @@ body {
   <div class="charts-grid">
     <div class="chart-card">
       <div class="chart-title">⏰ Próximos Eventos</div>
-      <div id="dash-proximos" class="próximos-list"></div>
+      <div id="dash-proximos" style="display:flex;flex-direction:column;gap:10px"></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">🏆 Ranking Pessoal</div>
       <div id="dash-ranking"></div>
     </div>
+  </div>
+  <div class="chart-card" style="margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="chart-title" style="margin-bottom:0">🎓 Simulados Recentes</div>
+      <button class="btn btn-secondary btn-sm" onclick="switchPage('estudos',document.querySelector('[data-page=estudos]'))">Ver todos →</button>
+    </div>
+    <div id="dash-simulados" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
   </div>
 </section>
 
@@ -852,6 +898,54 @@ body {
     <h3>Nenhuma prova registrada</h3>
     <p>Registre os concursos que você realizou para acompanhar seu desempenho.</p>
     <button class="btn btn-primary" onclick="openModalRealizado()">+ Registrar Prova</button>
+  </div>
+</section>
+
+
+<!-- ===== ESTUDOS ===== -->
+<section class="page" id="page-estudos">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">Central de <em>Estudos</em></h1>
+      <p class="section-subtitle">Simulados, checklists de tópicos e evolução por matéria</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" onclick="openModalSimulado()">📝 Registrar Simulado</button>
+      <button class="btn btn-primary btn-sm" onclick="openModalChecklist()">✅ Novo Checklist</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+    <div class="chart-card">
+      <div class="chart-title">📊 Evolução por Matéria</div>
+      <div class="bar-chart" id="est-materias"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📈 Progresso dos Checklists</div>
+      <div id="est-checklists-prog"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="chart-title" style="margin-bottom:0">🎓 Meus Simulados</div>
+    </div>
+    <div id="simulados-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
+    <div id="empty-simulados" style="display:none;text-align:center;padding:40px;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:12px;opacity:0.4">🎓</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text2);margin-bottom:8px">Nenhum simulado</h3>
+      <p style="font-size:13px;max-width:280px;margin:0 auto 16px">Registre seus simulados para acompanhar a evolução por matéria.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="chart-title" style="margin-bottom:0">✅ Checklists de Tópicos</div>
+    </div>
+    <div id="checklists-container"></div>
+    <div id="empty-checklists" style="display:none;text-align:center;padding:40px;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:12px;opacity:0.4">✅</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text2);margin-bottom:8px">Nenhum checklist</h3>
+      <p style="font-size:13px;max-width:280px;margin:0 auto 16px">Crie checklists de tópicos para acompanhar o conteúdo programático.</p>
+      <button class="btn btn-primary" onclick="openModalChecklist()">+ Criar Checklist</button>
+    </div>
   </div>
 </section>
 
@@ -1289,6 +1383,58 @@ body {
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
       <button class="btn btn-secondary" onclick="closeModal('modalFirebase')">Cancelar</button>
       <button class="btn btn-primary" onclick="salvarConfigFirebase()">✅ Conectar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL SIMULADO ===== -->
+<div class="modal-overlay" id="modalSimulado">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">Registrar Simulado</div><div class="modal-subtitle">Acompanhe sua evolução por matéria</div></div>
+      <button class="modal-close" onclick="closeModal('modalSimulado')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-sim-id">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Nome / Descrição *</label><input class="form-input" id="s-nome" placeholder="Ex: Simulado CESPE — Direito Constitucional"></div>
+        <div class="form-group"><label class="form-label">Matéria / Área</label><input class="form-input" id="s-materia" placeholder="Ex: Dir. Constitucional"></div>
+        <div class="form-group"><label class="form-label">Data</label><input class="form-input" id="s-data" type="date"></div>
+        <div class="form-group"><label class="form-label">Acertos</label><input class="form-input" id="s-acertos" type="number" placeholder="Ex: 72"></div>
+        <div class="form-group"><label class="form-label">Total de Questões</label><input class="form-input" id="s-total" type="number" placeholder="Ex: 100"></div>
+        <div class="form-group"><label class="form-label">Nota / Pontuação</label><input class="form-input" id="s-nota" type="number" step="0.01" placeholder="Ex: 72.00"></div>
+        <div class="form-group"><label class="form-label">Tempo (minutos)</label><input class="form-input" id="s-tempo" type="number" placeholder="Ex: 120"></div>
+        <div class="form-group full"><label class="form-label">Observações</label><textarea class="form-textarea" id="s-obs" placeholder="Dificuldades, pontos de melhora..."></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalSimulado')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarSimulado()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL CHECKLIST ===== -->
+<div class="modal-overlay" id="modalChecklist">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">Novo Checklist de Tópicos</div><div class="modal-subtitle">Crie manualmente colando os tópicos do edital</div></div>
+      <button class="modal-close" onclick="closeModal('modalChecklist')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full"><label class="form-label">Título do Checklist *</label><input class="form-input" id="cl-titulo" placeholder="Ex: Dir. Constitucional — TRT-MG 2025"></div>
+        <div class="form-group"><label class="form-label">Matéria</label><input class="form-input" id="cl-materia" placeholder="Ex: Direito Constitucional"></div>
+        <div class="form-group"><label class="form-label">Concurso</label><input class="form-input" id="cl-concurso" placeholder="Ex: TRT-MG"></div>
+        <div class="form-group full">
+          <label class="form-label">Tópicos (um por linha)</label>
+          <textarea class="form-textarea" id="cl-topicos" style="min-height:180px" placeholder="Princípios fundamentais&#10;Direitos e garantias fundamentais&#10;Organização do Estado&#10;Poderes da República&#10;..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalChecklist')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarChecklist()">💾 Salvar</button>
     </div>
   </div>
 </div>
@@ -2147,31 +2293,23 @@ function renderProximos() {
   const hoje=new Date();
   const eventos=[];
   concursos.forEach(c=>{
-    const dates=[
-      {label:`Edital — ${c.nome}`,date:c.dataEdital,org:c.orgao},
-      {label:`Inscrições: início — ${c.nome}`,date:c.dataInicio,org:c.orgao},
-      {label:`Inscrições: término — ${c.nome}`,date:c.dataFim,org:c.orgao},
-      {label:`Prova — ${c.nome}`,date:c.dataProva,org:c.orgao}
-    ];
-    dates.forEach(d=>{if(d.date&&new Date(d.date+'T23:59:59')>=hoje) eventos.push(d);});
+    [{label:`Edital — ${c.nome}`,date:c.dataEdital,org:c.orgao},{label:`Inscrições início — ${c.nome}`,date:c.dataInicio,org:c.orgao},{label:`Inscrições término — ${c.nome}`,date:c.dataFim,org:c.orgao},{label:`Prova — ${c.nome}`,date:c.dataProva,org:c.orgao}]
+    .forEach(d=>{if(d.date&&new Date(d.date+'T23:59:59')>=hoje)eventos.push(d);});
   });
   eventos.sort((a,b)=>a.date.localeCompare(b.date));
   if(!eventos.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Nenhum evento próximo</div>';return;}
   el.innerHTML=eventos.slice(0,5).map(ev=>{
-    const d=new Date(ev.date+'T12:00:00');
-    const diff=Math.ceil((d-hoje)/864e5);
-    const urg=diff<=7?'urgente':diff<=30?'breve':'ok';
-    const urgLabel=diff<=0?'Hoje':diff===1?'Amanhã':`${diff}d`;
+    const d=new Date(ev.date+'T12:00:00'),diff=Math.ceil((d-hoje)/864e5);
+    const urg=diff<=7?'urgente':diff<=30?'breve':'ok',urgL=diff<=0?'Hoje':diff===1?'Amanhã':`${diff}d`;
+    const gcDate=ev.date.replace(/-/g,'');
+    const gcUrl=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.label)}&dates=${gcDate}/${gcDate}`;
     return `<div class="prox-item">
-      <div class="prox-date-box">
-        <div class="prox-day">${d.getDate().toString().padStart(2,'0')}</div>
-        <div class="prox-month">${d.toLocaleString('pt-BR',{month:'short'}).toUpperCase()}</div>
+      <div class="prox-date-box"><div class="prox-day">${d.getDate().toString().padStart(2,'0')}</div><div class="prox-month">${d.toLocaleString('pt-BR',{month:'short'}).toUpperCase()}</div></div>
+      <div class="prox-info"><div class="prox-title">${ev.label}</div><div class="prox-desc">${ev.org||''}</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <span class="prox-urgency ${urg}">${urgL}</span>
+        <a href="${gcUrl}" target="_blank" class="gcal-btn" title="Adicionar ao Google Calendar">📅 Agenda</a>
       </div>
-      <div class="prox-info">
-        <div class="prox-title">${ev.label}</div>
-        <div class="prox-desc">${ev.org||''}</div>
-      </div>
-      <span class="prox-urgency ${urg}">${urgLabel}</span>
     </div>`;
   }).join('');
 }
@@ -2192,6 +2330,173 @@ function renderRanking() {
       </tr>`).join('')}
     </tbody>
   </table>`;
+}
+
+
+// ===== PWA =====
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('pwaBanner').classList.add('show');
+});
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(r => {
+    if (r.outcome === 'accepted') showToast('✅ App instalado!', 'success');
+    deferredPrompt = null;
+    document.getElementById('pwaBanner').classList.remove('show');
+  });
+}
+
+// ===== SIMULADOS & CHECKLISTS STATE =====
+let simulados = JSON.parse(localStorage.getItem('cp_simulados') || '[]');
+let checklists = JSON.parse(localStorage.getItem('cp_checklists') || '[]');
+
+function saveStudies() {
+  localStorage.setItem('cp_simulados', JSON.stringify(simulados));
+  localStorage.setItem('cp_checklists', JSON.stringify(checklists));
+}
+
+// ===== SIMULADOS =====
+function openModalSimulado(id = null) {
+  ['s-nome','s-materia','s-data','s-acertos','s-total','s-nota','s-tempo','s-obs','edit-sim-id'].forEach(fid => { const e = document.getElementById(fid); if(e) e.value = ''; });
+  if (id) {
+    const s = simulados.find(x => x.id === id);
+    if (s) { document.getElementById('edit-sim-id').value = s.id; ['nome','materia','data','acertos','total','nota','tempo','obs'].forEach(k => { const e = document.getElementById('s-'+k); if(e) e.value = s[k]||''; }); }
+  }
+  openModal('modalSimulado');
+}
+
+function salvarSimulado() {
+  const nome = v('s-nome').trim(); if (!nome) { showToast('⚠️ Informe o nome', 'error'); return; }
+  const editId = v('edit-sim-id');
+  const acertos = parseInt(v('s-acertos')) || 0, total = parseInt(v('s-total')) || 0;
+  const pct = total ? Math.round(acertos / total * 100) : 0;
+  const obj = { id: editId || uid(), nome, materia: v('s-materia'), data: v('s-data'), acertos, total, pct, nota: v('s-nota') || pct, tempo: v('s-tempo'), obs: v('s-obs'), updatedAt: new Date().toISOString() };
+  if (!editId) obj.createdAt = new Date().toISOString();
+  const idx = simulados.findIndex(x => x.id === obj.id);
+  if (idx >= 0) simulados[idx] = obj; else simulados.push(obj);
+  saveStudies(); saveToCloud('simulados', obj);
+  closeModal('modalSimulado'); renderEstudos(); renderDashboard();
+  showToast('✅ Simulado salvo!', 'success');
+}
+
+function delS(id, e) {
+  e && e.stopPropagation(); if (!confirm('Remover simulado?')) return;
+  simulados = simulados.filter(x => x.id !== id);
+  saveStudies(); deleteFromCloud('simulados', id);
+  renderEstudos(); renderDashboard(); showToast('🗑️ Removido', 'success');
+}
+
+// ===== CHECKLISTS =====
+function openModalChecklist() {
+  ['cl-titulo','cl-materia','cl-concurso','cl-topicos'].forEach(id => { const e = document.getElementById(id); if(e) e.value = ''; });
+  openModal('modalChecklist');
+}
+
+function salvarChecklist() {
+  const titulo = v('cl-titulo').trim(); if (!titulo) { showToast('⚠️ Informe o título', 'error'); return; }
+  const topicosRaw = v('cl-topicos').split('\n').map(t => t.trim()).filter(t => t.length > 0);
+  const obj = { id: uid(), titulo, materia: v('cl-materia'), concurso: v('cl-concurso'), topicos: topicosRaw.map(t => ({ id: uid(), texto: t, checked: false })), createdAt: new Date().toISOString() };
+  checklists.push(obj); saveStudies(); saveToCloud('checklists', obj);
+  closeModal('modalChecklist'); renderEstudos();
+  showToast('✅ Checklist criado!', 'success');
+}
+
+function toggleTopico(checklistId, topicoId) {
+  const cl = checklists.find(x => x.id === checklistId); if (!cl) return;
+  const top = cl.topicos.find(t => t.id === topicoId); if (!top) return;
+  top.checked = !top.checked; cl.updatedAt = new Date().toISOString();
+  saveStudies(); saveToCloud('checklists', cl); renderEstudos();
+}
+
+function delCL(id, e) {
+  e && e.stopPropagation(); if (!confirm('Remover checklist?')) return;
+  checklists = checklists.filter(x => x.id !== id);
+  saveStudies(); deleteFromCloud('checklists', id); renderEstudos();
+  showToast('🗑️ Removido', 'success');
+}
+
+// ===== RENDER ESTUDOS =====
+function renderEstudos() {
+  // Simulados
+  const sg = document.getElementById('simulados-grid'), es = document.getElementById('empty-simulados');
+  if (!simulados.length) { sg.innerHTML = ''; es.style.display = 'block'; }
+  else {
+    es.style.display = 'none';
+    sg.innerHTML = [...simulados].sort((a,b) => (b.updatedAt||'').localeCompare(a.updatedAt||'')).map(s => {
+      const pct = s.pct || Math.round((s.acertos/s.total)*100) || 0;
+      const cor = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--rose)';
+      return `<div class="simulado-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div class="simulado-nota" style="color:${cor}">${s.nota||pct+'%'}</div><div class="simulado-meta">${s.materia||'Geral'} · ${fmtDate(s.data)}</div></div>
+          <button class="btn btn-ghost btn-xs" onclick="delS('${s.id}',event)">🗑️</button>
+        </div>
+        <div style="margin-top:8px;font-size:12px;font-weight:600;color:var(--navy)">${s.nome}</div>
+        ${s.total ? `<div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;background:${cor}"></div></div><div style="font-size:11px;color:var(--text3);margin-top:4px">${s.acertos||0}/${s.total} acertos</div>` : ''}
+        ${s.obs ? `<div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">${s.obs.substring(0,80)}${s.obs.length>80?'...':''}</div>` : ''}
+        <button class="btn btn-secondary btn-xs btn-full" style="margin-top:10px" onclick="openModalSimulado('${s.id}')">✏️ Editar</button>
+      </div>`;
+    }).join('');
+  }
+
+  // Checklists
+  const cc = document.getElementById('checklists-container'), ecl = document.getElementById('empty-checklists');
+  if (!checklists.length) { cc.innerHTML = ''; ecl.style.display = 'block'; }
+  else {
+    ecl.style.display = 'none';
+    cc.innerHTML = checklists.map(cl => {
+      const total = cl.topicos?.length || 0, done = cl.topicos?.filter(t => t.checked).length || 0;
+      const pct = total ? Math.round(done / total * 100) : 0;
+      const cor = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--rose)';
+      return `<div style="margin-bottom:20px;padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div><div style="font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:var(--navy)">${cl.titulo}</div><div style="font-size:12px;color:var(--text3);margin-top:2px">${cl.materia||''} ${cl.concurso?'· '+cl.concurso:''}</div></div>
+          <div style="display:flex;gap:6px;align-items:center"><span style="font-size:13px;font-weight:700;color:${cor}">${pct}%</span><button class="btn btn-ghost btn-xs" onclick="delCL('${cl.id}',event)">🗑️</button></div>
+        </div>
+        <div class="progress-bar-wrap" style="margin-bottom:12px"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+        <div class="checklist">${(cl.topicos||[]).map(t => `<div class="checklist-item ${t.checked?'checked':''}" onclick="toggleTopico('${cl.id}','${t.id}')"><div class="check-box ${t.checked?'checked':''}">${t.checked?'✓':''}</div><div class="checklist-label">${t.texto}</div></div>`).join('')}</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:10px;text-align:right">${done}/${total} tópicos concluídos</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Analytics
+  const em = document.getElementById('est-materias');
+  const matMap = {};
+  simulados.forEach(s => { const m = s.materia||'Geral'; if(!matMap[m]){matMap[m]={count:0,total:0};} matMap[m].count++; const n = parseFloat(s.nota)||s.pct||0; matMap[m].total+=n; });
+  const mats = Object.entries(matMap).map(([m,v]) => ({m, media: v.count?v.total/v.count:0})).sort((a,b) => b.media-a.media);
+  const maxM = Math.max(...mats.map(m=>m.media), 10);
+  const cls = ['navy','teal','green','rose','blue','gold'];
+  em.innerHTML = !mats.length ? '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Registre simulados para ver</div>' :
+    mats.slice(0,8).map((m,i) => `<div class="bar-item"><div class="bar-label">${m.m}</div><div class="bar-track"><div class="bar-fill ${cls[i%cls.length]}" style="width:${(m.media/maxM*100).toFixed(0)}%"></div></div><div class="bar-value">${m.media.toFixed(1)}</div></div>`).join('');
+
+  const ep = document.getElementById('est-checklists-prog');
+  ep.innerHTML = !checklists.length ? '<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Nenhum checklist criado</div>' :
+    checklists.slice(0,6).map(cl => {
+      const total=cl.topicos?.length||0,done=cl.topicos?.filter(t=>t.checked).length||0,pct=total?Math.round(done/total*100):0;
+      const cor=pct>=80?'var(--green)':pct>=50?'var(--gold)':'var(--rose)';
+      return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:var(--text2);font-weight:500">${cl.titulo}</span><span style="font-weight:700;color:${cor}">${pct}%</span></div><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%;background:${cor}"></div></div></div>`;
+    }).join('');
+}
+
+// ===== EXPORT PDF =====
+function exportarPDF() {
+  const total=concursos.length, nR=realizados.length, aprov=realizados.filter(r=>r.resultado==='aprovado'||r.resultado==='classificado').length;
+  const notas=realizados.map(r=>parseFloat(r.final)).filter(n=>!isNaN(n)&&n>0);
+  const media=notas.length?(notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(1):'—';
+  const melhor=notas.length?Math.max(...notas).toFixed(1):'—';
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ConcursosPro — Relatório</title>
+  <style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#1a2340;line-height:1.5}h1{font-size:28px}h2{font-size:18px;color:#b8872a;margin:28px 0 12px;border-bottom:2px solid #b8872a;padding-bottom:6px}table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px}th{background:#1a2340;color:white;padding:8px 12px;text-align:left}td{padding:8px 12px;border-bottom:1px solid #eee}.stat{display:inline-block;background:#f5f6fa;border:1px solid #ddd;border-radius:8px;padding:12px 20px;margin:6px;text-align:center}.sv{font-size:28px;font-weight:700;color:#1a2340}.sl{font-size:11px;color:#666;text-transform:uppercase}@media print{button{display:none}}</style></head><body>
+  <h1>ConcursosPro — Relatório</h1><p style="color:#666">Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+  <h2>Resumo</h2><div><div class="stat"><div class="sv">${total}</div><div class="sl">Concursos</div></div><div class="stat"><div class="sv">${nR}</div><div class="sl">Provas</div></div><div class="stat"><div class="sv">${aprov}</div><div class="sl">Aprovações</div></div><div class="stat"><div class="sv">${media}</div><div class="sl">Média</div></div><div class="stat"><div class="sv">${melhor}</div><div class="sl">Melhor Nota</div></div></div>
+  ${concursos.length?`<h2>Concursos Previstos</h2><table><tr><th>Concurso</th><th>Órgão</th><th>Status</th><th>Prova</th><th>Banca</th></tr>${concursos.map(c=>`<tr><td>${c.nome}</td><td>${c.orgao||'—'}</td><td>${SL[c.status]||'—'}</td><td>${fmtDate(c.dataProva)}</td><td>${c.banca||'—'}</td></tr>`).join('')}</table>`:''}
+  ${realizados.length?`<h2>Provas Realizadas</h2><table><tr><th>Concurso</th><th>Data</th><th>Nota</th><th>Resultado</th><th>Posição</th></tr>${realizados.sort((a,b)=>parseFloat(b.final)-parseFloat(a.final)).map(r=>`<tr><td>${r.nome}</td><td>${fmtDate(r.data)}</td><td><strong>${r.final||'—'}</strong></td><td>${RL[r.resultado]}</td><td>${r.posicao||'—'}</td></tr>`).join('')}</table>`:''}
+  ${simulados.length?`<h2>Simulados</h2><table><tr><th>Nome</th><th>Matéria</th><th>Data</th><th>Nota</th><th>Acertos</th></tr>${simulados.map(s=>`<tr><td>${s.nome}</td><td>${s.materia||'—'}</td><td>${fmtDate(s.data)}</td><td>${s.nota||'—'}</td><td>${s.acertos||'—'}/${s.total||'—'}</td></tr>`).join('')}</table>`:''}
+  <script>window.print();<\/script></body></html>`);
+  win.document.close();
 }
 
 // ===== TOAST =====
