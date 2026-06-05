@@ -10,9 +10,20 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  window._firebase = { initializeApp, getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs, getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut };
+  window._firebase = { initializeApp, getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs, getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut };
+
+  // Auto-initialize with embedded config
+  const _fbConfig = {
+    apiKey: "AIzaSyCKpYmVf-6amlB-YTKdqbZ6QKhjQ1eIT6Q",
+    authDomain: "concursos-pro-d7f69.firebaseapp.com",
+    projectId: "concursos-pro-d7f69",
+    storageBucket: "concursos-pro-d7f69.firebasestorage.app",
+    messagingSenderId: "288882142519",
+    appId: "1:288882142519:web:3a4534842ea903b5457eb2"
+  };
+  window._fbConfig = _fbConfig;
 </script>
 
 <style>
@@ -1378,7 +1389,6 @@ function updateSyncUI() {
 }
 
 async function handleAuthAction() {
-  if (!auth) { openModal('modalFirebase'); return; }
   if (currentUser) {
     if (confirm('Deseja sair da conta?')) {
       await window._firebase.signOut(auth);
@@ -1386,6 +1396,11 @@ async function handleAuthAction() {
       updateSyncUI();
       showToast('👋 Sessão encerrada', 'success');
     }
+    return;
+  }
+  if (!auth) {
+    showToast('⏳ Conectando ao Firebase...', 'success');
+    setTimeout(handleAuthAction, 1000);
     return;
   }
   try {
@@ -2184,13 +2199,17 @@ function showToast(msg, type='success') {
 
 // ===== INIT =====
 loadLocal();
-// Try to restore Firebase config
-const savedFbConfig = localStorage.getItem('fb_config');
-if (savedFbConfig) {
-  try { initFirebase(JSON.parse(savedFbConfig)); } catch(e) { console.warn('Firebase config error', e); }
+// Auto-initialize with embedded config
+function waitForFirebase(attempts) {
+  if (attempts <= 0) { renderAll(); return; }
+  if (window._firebase && window._fbConfig) {
+    initFirebase(window._fbConfig);
+    renderAll();
+  } else {
+    setTimeout(() => waitForFirebase(attempts - 1), 200);
+  }
 }
-renderAll();
-// Show btn
+waitForFirebase(25);
 document.getElementById('btnNovo').style.display='none';
 </script>
 </body>
