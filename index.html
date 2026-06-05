@@ -9,12 +9,11 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  window._firebase = { initializeApp, getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs, getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut };
+  window._firebase = { initializeApp, getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut };
 
-  // Auto-initialize with embedded config
   const _fbConfig = {
     apiKey: "AIzaSyCKpYmVf-6amlB-YTKdqbZ6QKhjQ1eIT6Q",
     authDomain: "concursos-pro-d7f69.firebaseapp.com",
@@ -1319,6 +1318,8 @@ function initFirebase(config) {
       updateSyncUI();
       if (user) startListeners();
     });
+    // Auto sign-in anonymously so data syncs without requiring Google login
+    FB.signInAnonymously(auth).catch(e => console.warn('Anon auth failed:', e.message));
     return true;
   } catch(e) { console.error('Firebase init error', e); return false; }
 }
@@ -1377,9 +1378,13 @@ function setSyncStatus(s) {
 function updateSyncUI() {
   const lbl = document.getElementById('loginLabel');
   const icon = document.getElementById('loginIcon');
-  if (currentUser) {
+  if (currentUser && !currentUser.isAnonymous) {
     lbl.textContent = currentUser.displayName ? currentUser.displayName.split(' ')[0] : 'Conta';
     icon.textContent = '👤';
+    setSyncStatus('online');
+  } else if (currentUser && currentUser.isAnonymous) {
+    lbl.textContent = 'Login Google';
+    icon.textContent = '☁️';
     setSyncStatus('online');
   } else {
     lbl.textContent = 'Sincronizar';
@@ -1389,26 +1394,25 @@ function updateSyncUI() {
 }
 
 async function handleAuthAction() {
-  if (currentUser) {
-    if (confirm('Deseja sair da conta?')) {
-      await window._firebase.signOut(auth);
-      currentUser = null;
-      updateSyncUI();
-      showToast('👋 Sessão encerrada', 'success');
-    }
+  if (!auth) {
+    showToast('⏳ Conectando...', 'success');
+    setTimeout(handleAuthAction, 1000);
     return;
   }
-  if (!auth) {
-    showToast('⏳ Conectando ao Firebase...', 'success');
-    setTimeout(handleAuthAction, 1000);
+  if (currentUser && !currentUser.isAnonymous) {
+    if (confirm('Deseja sair da conta Google?')) {
+      await window._firebase.signOut(auth);
+      window._firebase.signInAnonymously(auth);
+      showToast('👋 Saiu da conta Google', 'success');
+    }
     return;
   }
   try {
     const provider = new window._firebase.GoogleAuthProvider();
     await window._firebase.signInWithPopup(auth, provider);
-    showToast('✅ Login realizado!', 'success');
+    showToast('✅ Login com Google realizado!', 'success');
   } catch(e) {
-    showToast('Erro no login: ' + e.message, 'error');
+    showToast('Erro no login Google: ' + e.message, 'error');
   }
 }
 
