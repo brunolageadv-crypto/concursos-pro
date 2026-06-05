@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ConcursosPro · Painel Estratégico</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  window._firebase = { initializeApp, getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs, getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut };
+</script>
+
+<style>
+:root {
+  --bg: #f5f6fa;
+  --bg2: #eef0f6;
+  --surface: #ffffff;
+  --surface2: #f8f9fc;
+  --surface3: #eef0f6;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --navy: #1a2340;
+  --navy2: #253158;
+  --gold: #b8872a;
+  --gold-light: #d4a843;
+  --gold-bg: rgba(184,135,42,0.08);
+  --gold-border: rgba(184,135,42,0.25);
+  --teal: #0d8b83;
+  --teal-bg: rgba(13,139,131,0.08);
+  --rose: #c0392b;
+  --rose-bg: rgba(192,57,43,0.08);
+  --green: #1a7a4a;
+  --green-bg: rgba(26,122,74,0.08);
+  --blue: #1d5fa6;
+  --blue-bg: rgba(29,95,166,0.08);
+  --purple: #6b3fa0;
+  --purple-bg: rgba(107,63,160,0.08);
+  --text: #1a2340;
+  --text2: #4a5568;
+  --text3: #8896a8;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow: 0 2px 16px rgba(26,35,64,0.08);
+  --shadow-md: 0 4px 24px rgba(26,35,64,0.12);
+  --shadow-gold: 0 4px 20px rgba(184,135,42,0.2);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== HEADER ===== */
+.header {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  box-shadow: 0 1px 0 var(--border);
+}
+.header-inner {
+  max-width: 1400px; margin: 0 auto;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  height: 62px; gap: 16px;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; cursor: pointer;
+  flex-shrink: 0;
+}
+.logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(145deg, var(--navy), var(--navy2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(26,35,64,0.3);
+}
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 600;
+  color: var(--navy); letter-spacing: -0.01em;
+}
+.logo-text em { color: var(--gold); font-style: normal; }
+
+.nav-tabs {
+  display: flex; gap: 2px;
+  background: var(--surface3);
+  padding: 3px; border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.nav-tab {
+  padding: 7px 18px; border-radius: 8px; border: none;
+  background: transparent; color: var(--text2);
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.18s; white-space: nowrap;
+}
+.nav-tab.active {
+  background: white; color: var(--navy); font-weight: 600;
+  box-shadow: var(--shadow);
+}
+.nav-tab:hover:not(.active) { color: var(--navy); background: rgba(255,255,255,0.6); }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+.sync-indicator {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text3);
+  padding: 5px 10px; border-radius: 20px;
+  background: var(--surface3); border: 1px solid var(--border);
+}
+.sync-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text3); flex-shrink: 0;
+}
+.sync-dot.online { background: var(--green); }
+.sync-dot.syncing { background: var(--gold); animation: pulse 1s infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.btn-login {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: white; color: var(--text); font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.18s;
+}
+.btn-login:hover { border-color: var(--navy); color: var(--navy); box-shadow: var(--shadow); }
+
+/* ===== MAIN ===== */
+.main { max-width: 1400px; margin: 0 auto; padding: 28px 24px 80px; }
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:none} }
+
+/* ===== SECTION HEADER ===== */
+.section-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 24px;
+  gap: 16px; flex-wrap: wrap;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1.2;
+}
+.section-title em { color: var(--gold); font-style: normal; }
+.section-subtitle { font-size: 13px; color: var(--text3); margin-top: 4px; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px; border-radius: 8px; border: none;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.18s; white-space: nowrap;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--navy), var(--navy2));
+  color: white; box-shadow: 0 2px 8px rgba(26,35,64,0.25);
+}
+.btn-primary:hover { opacity: 0.92; box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: white; box-shadow: var(--shadow-gold);
+}
+.btn-gold:hover { opacity: 0.92; }
+.btn-secondary {
+  background: white; color: var(--text);
+  border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.btn-secondary:hover { border-color: var(--navy); color: var(--navy); }
+.btn-ghost { background: transparent; color: var(--text3); padding: 8px 10px; }
+.btn-ghost:hover { color: var(--rose); background: var(--rose-bg); }
+.btn-sm { padding: 6px 13px; font-size: 12px; }
+.btn-xs { padding: 4px 10px; font-size: 11px; }
+.btn-full { width: 100%; justify-content: center; }
+.btn-danger { background: var(--rose-bg); color: var(--rose); border: 1px solid rgba(192,57,43,0.2); }
+.btn-danger:hover { background: var(--rose); color: white; }
+
+/* ===== CARDS ===== */
+.card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+/* ===== DASHBOARD ===== */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.stat-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-card-accent {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.stat-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px; font-weight: 700; line-height: 1; margin-bottom: 6px;
+}
+.stat-label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+.stat-trend { font-size: 11px; margin-top: 6px; }
+
+/* Colors */
+.c-navy { color: var(--navy); }
+.c-gold { color: var(--gold); }
+.c-teal { color: var(--teal); }
+.c-green { color: var(--green); }
+.c-rose { color: var(--rose); }
+.c-blue { color: var(--blue); }
+.c-purple { color: var(--purple); }
+
+.acc-navy { background: linear-gradient(90deg, var(--navy), transparent); }
+.acc-gold { background: linear-gradient(90deg, var(--gold), transparent); }
+.acc-teal { background: linear-gradient(90deg, var(--teal), transparent); }
+.acc-green { background: linear-gradient(90deg, var(--green), transparent); }
+.acc-rose { background: linear-gradient(90deg, var(--rose), transparent); }
+.acc-blue { background: linear-gradient(90deg, var(--blue), transparent); }
+
+/* ===== CHARTS GRID ===== */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.chart-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 22px; box-shadow: var(--shadow);
+}
+.chart-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: 12px; }
+.bar-item { display: flex; align-items: center; gap: 10px; }
+.bar-label { font-size: 12px; color: var(--text2); min-width: 110px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-track { flex: 1; height: 8px; background: var(--surface3); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
+.bar-fill.navy { background: linear-gradient(90deg, var(--navy), var(--navy2)); }
+.bar-fill.gold { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+.bar-fill.teal { background: linear-gradient(90deg, var(--teal), #1ab0a6); }
+.bar-fill.green { background: linear-gradient(90deg, var(--green), #2aa05c); }
+.bar-fill.rose { background: linear-gradient(90deg, var(--rose), #e05040); }
+.bar-fill.blue { background: linear-gradient(90deg, var(--blue), #3a80c6); }
+.bar-value { font-size: 12px; color: var(--text3); font-family: 'JetBrains Mono', monospace; min-width: 36px; }
+
+/* Donut */
+.donut-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.donut-legend { display: flex; flex-direction: column; gap: 10px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text2); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* ===== CONCURSO CARDS ===== */
+.concursos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+}
+.concurso-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow); transition: all 0.22s; cursor: pointer;
+}
+.concurso-card:hover {
+  border-color: var(--navy); box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.cc-top { height: 4px; }
+.cc-top.navy { background: linear-gradient(90deg, var(--navy), #4a6fa5); }
+.cc-top.gold { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+.cc-top.teal { background: linear-gradient(90deg, var(--teal), #1ab0a6); }
+.cc-top.green { background: linear-gradient(90deg, var(--green), #2aa05c); }
+.cc-top.rose { background: linear-gradient(90deg, var(--rose), #e05040); }
+.cc-body { padding: 18px 20px; }
+.cc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.cc-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 600; color: var(--navy); line-height: 1.35; }
+.cc-org { font-size: 11px; color: var(--text3); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
+.cc-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 13px; }
+.meta-item label { display: block; font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.09em; font-weight: 600; margin-bottom: 2px; }
+.meta-item span { font-size: 13px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+.cc-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 13px; }
+.tag { padding: 2px 9px; border-radius: 5px; font-size: 11px; background: var(--surface3); color: var(--text2); border: 1px solid var(--border); font-weight: 500; }
+.cc-footer { display: flex; gap: 7px; padding: 12px 18px; background: var(--surface2); border-top: 1px solid var(--border); }
+
+/* ===== BADGES ===== */
+.badge {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  white-space: nowrap; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.badge-previsto { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(107,63,160,0.2); }
+.badge-edital { background: var(--gold-bg); color: var(--gold); border: var(--gold-border) 1px solid; }
+.badge-inscricoes { background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(13,139,131,0.2); }
+.badge-encerrado { background: var(--rose-bg); color: var(--rose); border: 1px solid rgba(192,57,43,0.2); }
+.badge-realizado { background: var(--green-bg); color: var(--green); border: 1px solid rgba(26,122,74,0.2); }
+.badge-aprovado { background: var(--green-bg); color: var(--green); border: 1px solid rgba(26,122,74,0.3); }
+.badge-reprovado { background: var(--rose-bg); color: var(--rose); border: 1px solid rgba(192,57,43,0.3); }
+.badge-aguardando { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(29,95,166,0.2); }
+.badge-classificado { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(107,63,160,0.2); }
+
+/* ===== FILTERS ===== */
+.filters { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 22px; align-items: center; }
+.filter-btn {
+  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: white; color: var(--text2); font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.18s;
+}
+.filter-btn.active { border-color: var(--navy); color: var(--navy); background: var(--bg2); font-weight: 600; }
+.filter-btn:hover:not(.active) { border-color: var(--border2); color: var(--text); }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,35,64,0.35);
+  backdrop-filter: blur(6px);
+  z-index: 1000; display: none; align-items: center;
+  justify-content: center; padding: 20px; overflow-y: auto;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: white; border: 1px solid var(--border2);
+  border-radius: var(--radius-lg); width: 100%; max-width: 700px;
+  max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(26,35,64,0.25);
+  animation: slideUp 0.28s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes slideUp { from{opacity:0;transform:translateY(18px) scale(0.98)} to{opacity:1;transform:none} }
+.modal-header {
+  padding: 22px 24px 16px; display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: white; z-index: 1;
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--navy); }
+.modal-subtitle { font-size: 13px; color: var(--text3); margin-top: 3px; }
+.modal-close {
+  background: var(--surface3); border: 1px solid var(--border);
+  color: var(--text2); width: 32px; height: 32px; border-radius: 8px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0; transition: all 0.18s;
+}
+.modal-close:hover { background: var(--rose-bg); color: var(--rose); border-color: rgba(192,57,43,0.3); }
+.modal-body { padding: 22px 24px; }
+.modal-footer {
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; justify-content: flex-end;
+  position: sticky; bottom: 0; background: white;
+}
+
+/* ===== FORM ===== */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.07em; }
+.form-input, .form-select, .form-textarea {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 9px 12px; color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 14px; transition: border-color 0.18s;
+  width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(26,35,64,0.08);
+  background: white;
+}
+.form-input::placeholder { color: var(--text3); }
+.form-select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238896a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-section-title {
+  font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 600;
+  color: var(--navy); grid-column: 1/-1; padding: 12px 0 8px;
+  border-bottom: 1px solid var(--border); margin-top: 4px;
+  display: flex; align-items: center; gap: 7px;
+}
+
+/* ===== DISCIPLINAS BUILDER ===== */
+.disciplinas-builder {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 14px;
+}
+.disciplina-row {
+  display: grid; grid-template-columns: 1fr 80px 80px auto;
+  gap: 8px; align-items: center; margin-bottom: 8px;
+  animation: fadeIn 0.2s ease;
+}
+.disciplina-row:last-child { margin-bottom: 0; }
+.disciplina-input {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 7px; padding: 7px 10px; color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 13px; width: 100%;
+}
+.disciplina-input:focus { outline: none; border-color: var(--navy); }
+.disciplina-num {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 7px; padding: 7px 8px; color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  width: 100%; text-align: center;
+}
+.disciplina-num:focus { outline: none; border-color: var(--navy); }
+.disciplina-peso {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: 7px; padding: 7px 8px; color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  width: 100%; text-align: center;
+}
+.disciplina-peso:focus { outline: none; border-color: var(--navy); }
+.btn-remove-disc {
+  background: transparent; border: 1.5px solid var(--border);
+  border-radius: 7px; width: 32px; height: 32px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3); transition: all 0.18s; flex-shrink: 0;
+  font-size: 14px;
+}
+.btn-remove-disc:hover { background: var(--rose-bg); color: var(--rose); border-color: rgba(192,57,43,0.3); }
+.disc-header {
+  display: grid; grid-template-columns: 1fr 80px 80px auto;
+  gap: 8px; margin-bottom: 8px;
+}
+.disc-header span {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 0 2px;
+}
+.disc-footer { margin-top: 10px; }
+.disc-total {
+  font-size: 12px; color: var(--text3); font-family: 'JetBrains Mono', monospace;
+  text-align: right; padding-top: 8px; border-top: 1px solid var(--border);
+}
+
+/* ===== PROVAS TABS ===== */
+.provas-tabs {
+  display: flex; gap: 2px; background: var(--surface3);
+  border-radius: 8px; padding: 3px; margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+.provas-tab {
+  flex: 1; padding: 7px; border: none; border-radius: 6px;
+  background: transparent; color: var(--text2);
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all 0.18s; text-align: center;
+}
+.provas-tab.active {
+  background: white; color: var(--navy); font-weight: 600;
+  box-shadow: var(--shadow);
+}
+.prova-section { display: none; }
+.prova-section.active { display: block; }
+
+/* Toggle switch */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.toggle-label { font-size: 13px; color: var(--text2); font-weight: 500; }
+.toggle {
+  position: relative; width: 44px; height: 24px;
+  background: var(--surface3); border-radius: 12px;
+  border: 1.5px solid var(--border); cursor: pointer; transition: all 0.2s;
+}
+.toggle.on { background: var(--navy); border-color: var(--navy); }
+.toggle::after {
+  content: ''; position: absolute; width: 18px; height: 18px;
+  background: white; border-radius: 50%; top: 1px; left: 2px;
+  transition: left 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.toggle.on::after { left: 22px; }
+
+/* ===== DETAIL VIEW ===== */
+.detail-meta-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px; margin-bottom: 20px;
+}
+.detail-meta-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px;
+}
+.detail-meta-item label {
+  display: block; font-size: 10px; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 4px;
+}
+.detail-meta-item span {
+  font-size: 15px; font-weight: 600; color: var(--navy);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Timeline */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 8px; top: 8px; bottom: 8px;
+  width: 2px; background: linear-gradient(180deg, var(--navy) 0%, var(--border) 100%);
+}
+.timeline-item { position: relative; margin-bottom: 18px; }
+.timeline-dot {
+  position: absolute; left: -24px; top: 4px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--surface3); border: 2px solid var(--border2);
+}
+.timeline-item.done .timeline-dot { background: var(--gold); border-color: var(--gold); }
+.timeline-item.current .timeline-dot { background: var(--navy); border-color: var(--navy); box-shadow: 0 0 0 4px rgba(26,35,64,0.12); }
+.timeline-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); margin-bottom: 2px; }
+.timeline-label { font-size: 14px; font-weight: 500; color: var(--text); }
+.timeline-note { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* ===== SCORE GAUGE ===== */
+.score-circle { width: 100px; height: 100px; position: relative; margin: 0 auto 6px; }
+.score-circle svg { transform: rotate(-90deg); }
+.score-circle-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.score-number { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--navy); }
+.score-max { font-size: 11px; color: var(--text3); }
+
+/* ===== NOTE BOX ===== */
+.note-box {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-left: 3px solid var(--gold); border-radius: 8px;
+  padding: 12px 15px; font-size: 13px; color: var(--text2); line-height: 1.65;
+}
+
+/* ===== NOTA TABLE ===== */
+.nota-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.nota-table th {
+  text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 700;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border); background: var(--surface2);
+}
+.nota-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+.nota-table tr:last-child td { border-bottom: none; }
+.nota-table tr:hover td { background: var(--surface2); }
+.nota-table tr { cursor: pointer; }
+
+/* ===== SECTION SEP ===== */
+.section-sep {
+  display: flex; align-items: center; gap: 10px;
+  margin: 20px 0 14px; color: var(--text3);
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+}
+.section-sep::before, .section-sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ===== SEARCH ===== */
+.search-wrap { position: relative; }
+.search-input {
+  width: 100%; background: white; border: 1.5px solid var(--border);
+  border-radius: 8px; padding: 8px 12px 8px 34px;
+  color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px;
+  transition: border-color 0.18s;
+}
+.search-input:focus { outline: none; border-color: var(--navy); }
+.search-input::placeholder { color: var(--text3); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state { text-align: center; padding: 70px 24px; color: var(--text3); }
+.empty-state .icon { font-size: 44px; margin-bottom: 16px; opacity: 0.5; }
+.empty-state h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text2); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; max-width: 300px; margin: 0 auto 22px; line-height: 1.6; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--navy); border-radius: 10px;
+  padding: 12px 20px; font-size: 13px; color: white;
+  box-shadow: var(--shadow-md); z-index: 9999;
+  display: none; animation: toastIn 0.28s cubic-bezier(0.16,1,0.3,1);
+  align-items: center; gap: 8px; max-width: 320px;
+}
+.toast.show { display: flex; }
+.toast.success { background: var(--green); }
+.toast.error { background: var(--rose); }
+@keyframes toastIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+/* ===== FIREBASE CONFIG MODAL ===== */
+.firebase-modal {
+  background: white; border-radius: var(--radius-lg); padding: 32px;
+  max-width: 480px; width: 100%; box-shadow: var(--shadow-md);
+  animation: slideUp 0.28s cubic-bezier(0.16,1,0.3,1);
+}
+.firebase-step { margin-bottom: 16px; }
+.firebase-step h3 { font-size: 14px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+.firebase-step p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.firebase-step code {
+  background: var(--surface3); padding: 1px 6px; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--navy);
+}
+
+/* ===== DASHBOARD RECENT ===== */
+.recent-list { display: flex; flex-direction: column; gap: 10px; }
+.recent-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; transition: all 0.18s; cursor: pointer;
+}
+.recent-item:hover { background: white; box-shadow: var(--shadow); }
+.recent-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.recent-info { flex: 1; min-width: 0; }
+.recent-title { font-size: 13px; font-weight: 600; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+
+/* ===== DIVIDER ===== */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* ===== REALIZADO CARD ===== */
+.realizado-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow); transition: all 0.22s; cursor: pointer;
+}
+.realizado-card:hover {
+  border-color: var(--teal); box-shadow: 0 4px 20px rgba(13,139,131,0.15);
+  transform: translateY(-2px);
+}
+.rc-top { height: 4px; background: linear-gradient(90deg, var(--teal), #1ab0a6); }
+
+/* ===== TIMELINE DASH ===== */
+.próximos-list { display: flex; flex-direction: column; gap: 10px; }
+.prox-item {
+  display: flex; align-items: center; gap: 14px; padding: 12px 14px;
+  background: white; border: 1px solid var(--border);
+  border-radius: 10px; box-shadow: var(--shadow);
+}
+.prox-date-box {
+  background: linear-gradient(135deg, var(--navy), var(--navy2));
+  border-radius: 8px; padding: 8px 12px; text-align: center;
+  min-width: 54px; flex-shrink: 0;
+}
+.prox-day { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: white; line-height: 1; }
+.prox-month { font-size: 10px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+.prox-info { flex: 1; }
+.prox-title { font-size: 13px; font-weight: 600; color: var(--navy); }
+.prox-desc { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.prox-urgency { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.urgente { background: var(--rose-bg); color: var(--rose); }
+.breve { background: var(--gold-bg); color: var(--gold); }
+.ok { background: var(--green-bg); color: var(--green); }
+
+/* ===== EVOLUÇÃO CHART ===== */
+#evolucao-svg { width: 100%; display: block; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .header-inner { height: 56px; }
+  .logo-text { display: none; }
+  .nav-tabs { gap: 1px; }
+  .nav-tab { padding: 6px 11px; font-size: 12px; }
+  .main { padding: 18px 14px 60px; }
+  .concursos-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.full { grid-column: 1; }
+  .form-section-title { grid-column: 1; }
+  .dash-stats { grid-template-columns: repeat(2,1fr); }
+  .detail-meta-grid { grid-template-columns: repeat(2,1fr); }
+  .disciplina-row { grid-template-columns: 1fr 70px 65px auto; }
+  .charts-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .nav-tab .tab-label { display: none; }
+  .dash-stats { grid-template-columns: 1fr 1fr; }
+  .disciplina-row { grid-template-columns: 1fr 65px auto; }
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--surface3); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo" onclick="goHome()">
+      <div class="logo-icon">
+        <!-- SVG elegante de prova/documento -->
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="1" width="13" height="17" rx="2" stroke="white" stroke-width="1.5" fill="none"/>
+          <rect x="6" y="5" width="7" height="1.2" rx="0.6" fill="white" opacity="0.9"/>
+          <rect x="6" y="8" width="7" height="1.2" rx="0.6" fill="white" opacity="0.9"/>
+          <rect x="6" y="11" width="4.5" height="1.2" rx="0.6" fill="white" opacity="0.9"/>
+          <circle cx="16.5" cy="16.5" r="4.5" fill="#c9a84c"/>
+          <path d="M14.5 16.5l1.5 1.5 2.5-2.5" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="logo-text">Concursos<em>Pro</em></span>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-page="dashboard" onclick="switchPage('dashboard',this)">
+        📊 <span class="tab-label">Dashboard</span>
+      </button>
+      <button class="nav-tab" data-page="previstos" onclick="switchPage('previstos',this)">
+        📋 <span class="tab-label">Previstos</span>
+      </button>
+      <button class="nav-tab" data-page="realizados" onclick="switchPage('realizados',this)">
+        ✅ <span class="tab-label">Realizados</span>
+      </button>
+    </nav>
+
+    <div class="header-right">
+      <div class="sync-indicator" id="syncIndicator">
+        <div class="sync-dot" id="syncDot"></div>
+        <span id="syncLabel">Local</span>
+      </div>
+      <button class="btn-login btn-sm" id="btnLogin" onclick="handleAuthAction()">
+        <span id="loginIcon">☁️</span>
+        <span id="loginLabel">Sincronizar</span>
+      </button>
+      <button class="btn btn-primary btn-sm" id="btnNovo" onclick="openModalNovo()">+ Novo</button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ===== DASHBOARD ===== -->
+<section class="page active" id="page-dashboard">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">Painel <em>Estratégico</em></h1>
+      <p class="section-subtitle">Visão completa da sua preparação para concursos</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-gold btn-sm" onclick="switchPage('previstos',document.querySelector('[data-page=previstos]'))">+ Novo Concurso</button>
+      <button class="btn btn-secondary btn-sm" onclick="openModalRealizado()">+ Registrar Prova</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="dash-stats" id="dash-stats"></div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">🎯 Resultado dos Concursos</div>
+      <div class="donut-wrap" id="dash-donut">
+        <svg width="110" height="110" viewBox="0 0 110 110" id="donut-svg"></svg>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📊 Desempenho por Área</div>
+      <div class="bar-chart" id="dash-areas"></div>
+    </div>
+  </div>
+
+  <!-- EVOLUÇÃO -->
+  <div class="chart-card" style="margin-bottom:24px;">
+    <div class="chart-title">📈 Evolução de Notas</div>
+    <div style="position:relative;height:150px;overflow:hidden">
+      <svg id="evolucao-svg" height="150" viewBox="0 0 700 150" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+
+  <!-- DOIS PAINEIS -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">⏰ Próximos Eventos</div>
+      <div id="dash-proximos" class="próximos-list"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🏆 Ranking Pessoal</div>
+      <div id="dash-ranking"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PREVISTOS ===== -->
+<section class="page" id="page-previstos">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">Concursos <em>Previstos</em></h1>
+      <p class="section-subtitle">Editais, cronogramas e acompanhamento dos certames</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div class="search-wrap" style="min-width:220px">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" placeholder="Pesquisar..." oninput="filtrar(this.value)">
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openModalNovo()">+ Novo Concurso</button>
+    </div>
+  </div>
+
+  <div class="filters" id="filtros-prev">
+    <button class="filter-btn active" onclick="setFiltro('todos',this)">Todos</button>
+    <button class="filter-btn" onclick="setFiltro('previsto',this)">Previsto</button>
+    <button class="filter-btn" onclick="setFiltro('edital',this)">Com Edital</button>
+    <button class="filter-btn" onclick="setFiltro('inscricoes',this)">Inscrições Abertas</button>
+    <button class="filter-btn" onclick="setFiltro('encerrado',this)">Encerrado</button>
+  </div>
+
+  <div class="concursos-grid" id="grid-previstos"></div>
+  <div class="empty-state" id="empty-previstos" style="display:none">
+    <div class="icon">📋</div>
+    <h3>Nenhum concurso cadastrado</h3>
+    <p>Adicione concursos para acompanhar editais e cronogramas.</p>
+    <button class="btn btn-primary" onclick="openModalNovo()">+ Adicionar Concurso</button>
+  </div>
+</section>
+
+<!-- ===== REALIZADOS ===== -->
+<section class="page" id="page-realizados">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">Concursos <em>Realizados</em></h1>
+      <p class="section-subtitle">Histórico de provas, notas e resultados</p>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openModalRealizado()">+ Registrar Prova</button>
+  </div>
+
+  <div class="filters" id="filtros-real">
+    <button class="filter-btn active" onclick="setFiltroR('todos',this)">Todos</button>
+    <button class="filter-btn" onclick="setFiltroR('aprovado',this)">Aprovado</button>
+    <button class="filter-btn" onclick="setFiltroR('classificado',this)">Classificado</button>
+    <button class="filter-btn" onclick="setFiltroR('aguardando',this)">Aguardando</button>
+    <button class="filter-btn" onclick="setFiltroR('reprovado',this)">Reprovado</button>
+  </div>
+
+  <div class="concursos-grid" id="grid-realizados"></div>
+  <div class="empty-state" id="empty-realizados" style="display:none">
+    <div class="icon">✅</div>
+    <h3>Nenhuma prova registrada</h3>
+    <p>Registre os concursos que você realizou para acompanhar seu desempenho.</p>
+    <button class="btn btn-primary" onclick="openModalRealizado()">+ Registrar Prova</button>
+  </div>
+</section>
+
+</main>
+
+<!-- ===== MODAL DETALHE ===== -->
+<div class="modal-overlay" id="modalDetalhe">
+  <div class="modal" style="max-width:780px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="det-title">—</div>
+        <div class="modal-subtitle" id="det-org">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalDetalhe')">✕</button>
+    </div>
+    <div class="modal-body" id="det-body"></div>
+  </div>
+</div>
+
+<!-- ===== MODAL NOVO CONCURSO ===== -->
+<div class="modal-overlay" id="modalNovo">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-novo-title">Novo Concurso</div>
+        <div class="modal-subtitle">Preencha as informações disponíveis no momento</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalNovo')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-grid">
+
+        <div class="form-section-title">📌 Identificação</div>
+
+        <div class="form-group full">
+          <label class="form-label">Nome do Concurso / Cargo *</label>
+          <input class="form-input" id="f-nome" placeholder="Ex: Analista Jurídico — TRT-MG">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Órgão / Entidade</label>
+          <input class="form-input" id="f-orgao" placeholder="Ex: TRT-MG">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Área / Especialidade</label>
+          <input class="form-input" id="f-area" placeholder="Ex: Jurídica, Fiscal, TI">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nível</label>
+          <select class="form-select" id="f-nivel">
+            <option value="">Selecione</option>
+            <option>Superior</option><option>Médio</option>
+            <option>Técnico</option><option>Fundamental</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="f-status">
+            <option value="previsto">Previsto</option>
+            <option value="edital">Edital Publicado</option>
+            <option value="inscricoes">Inscrições Abertas</option>
+            <option value="encerrado">Encerrado</option>
+          </select>
+        </div>
+
+        <div class="form-section-title">💰 Vagas e Remuneração</div>
+
+        <div class="form-group">
+          <label class="form-label">Vagas</label>
+          <input class="form-input" id="f-vagas" placeholder="Ex: 50 + CR">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salário / Remuneração</label>
+          <input class="form-input" id="f-salario" placeholder="Ex: R$ 8.500,00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Taxa de Inscrição</label>
+          <input class="form-input" id="f-taxa" placeholder="Ex: R$ 120,00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lotação / Local</label>
+          <input class="form-input" id="f-local" placeholder="Ex: Belo Horizonte - MG">
+        </div>
+
+        <div class="form-section-title">📅 Cronograma</div>
+
+        <div class="form-group">
+          <label class="form-label">Data prevista do Edital</label>
+          <input class="form-input" id="f-data-edital" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Início das Inscrições</label>
+          <input class="form-input" id="f-data-inicio" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Término das Inscrições</label>
+          <input class="form-input" id="f-data-fim" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data da Prova</label>
+          <input class="form-input" id="f-data-prova" type="date">
+        </div>
+
+        <div class="form-section-title">📄 Edital e Banca</div>
+
+        <div class="form-group full">
+          <label class="form-label">Link do Edital / Página Oficial</label>
+          <input class="form-input" id="f-link" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Banca Organizadora</label>
+          <input class="form-input" id="f-banca" placeholder="Ex: CESPE, FCC, FGV">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número do Edital</label>
+          <input class="form-input" id="f-num-edital" placeholder="Ex: 01/2025">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prioridade Pessoal</label>
+          <select class="form-select" id="f-prioridade">
+            <option value="alta">🔴 Alta</option>
+            <option value="media" selected>🟡 Média</option>
+            <option value="baixa">🟢 Baixa</option>
+          </select>
+        </div>
+
+        <!-- ===== PROVAS TABS ===== -->
+        <div class="form-section-title">📝 Estrutura das Provas</div>
+
+        <div class="full" style="grid-column:1/-1">
+          <div class="provas-tabs">
+            <button class="provas-tab active" onclick="switchProvaTab('objetiva',this)">Objetiva</button>
+            <button class="provas-tab" onclick="switchProvaTab('dissertativa',this)">Dissertativa / Redação</button>
+            <button class="provas-tab" onclick="switchProvaTab('oral',this)">Oral / Entrevista</button>
+          </div>
+
+          <!-- OBJETIVA -->
+          <div class="prova-section active" id="psec-objetiva">
+            <div class="toggle-wrap">
+              <div class="toggle on" id="tog-objetiva" onclick="toggleProva('objetiva')"></div>
+              <span class="toggle-label">Possui prova objetiva</span>
+            </div>
+            <div id="objetiva-fields">
+              <div style="margin-bottom:10px">
+                <label class="form-label" style="margin-bottom:6px;display:block">Total de questões objetivas</label>
+                <input class="form-input" id="f-obj-total" type="number" placeholder="Ex: 80" style="max-width:160px">
+              </div>
+              <div style="margin-bottom:10px">
+                <label class="form-label" style="margin-bottom:6px;display:block">Nota mínima de aprovação</label>
+                <input class="form-input" id="f-obj-min" type="number" step="0.01" placeholder="Ex: 60.00" style="max-width:160px">
+              </div>
+              <label class="form-label" style="margin-bottom:8px;display:block">Disciplinas da Prova Objetiva</label>
+              <div class="disciplinas-builder">
+                <div class="disc-header">
+                  <span>Disciplina</span><span style="text-align:center">Questões</span><span style="text-align:center">Peso (%)</span><span></span>
+                </div>
+                <div id="disc-list-objetiva"></div>
+                <div class="disc-footer">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="addDisc('objetiva')">+ Adicionar Disciplina</button>
+                  <div class="disc-total" id="disc-total-objetiva"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DISSERTATIVA -->
+          <div class="prova-section" id="psec-dissertativa">
+            <div class="toggle-wrap">
+              <div class="toggle" id="tog-dissertativa" onclick="toggleProva('dissertativa')"></div>
+              <span class="toggle-label">Possui prova dissertativa / redação</span>
+            </div>
+            <div id="dissertativa-fields" style="display:none">
+              <div class="form-grid" style="margin-bottom:12px">
+                <div class="form-group">
+                  <label class="form-label">Tipo</label>
+                  <select class="form-select" id="f-diss-tipo">
+                    <option value="dissertativa">Dissertativa</option>
+                    <option value="redacao">Redação</option>
+                    <option value="peça">Peça Prático-Profissional</option>
+                    <option value="sentenca">Sentença/Decisão</option>
+                    <option value="parecer">Parecer</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nota Máxima</label>
+                  <input class="form-input" id="f-diss-max" type="number" step="0.01" placeholder="Ex: 100">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nota Mínima (aprovação)</label>
+                  <input class="form-input" id="f-diss-min" type="number" step="0.01" placeholder="Ex: 60">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Número de Questões / Peças</label>
+                  <input class="form-input" id="f-diss-qtd" type="number" placeholder="Ex: 2">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Peso na nota final (%)</label>
+                  <input class="form-input" id="f-diss-peso" type="number" step="0.01" placeholder="Ex: 40">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Duração (horas)</label>
+                  <input class="form-input" id="f-diss-dur" type="number" step="0.5" placeholder="Ex: 5">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Observações / Estrutura</label>
+                <textarea class="form-textarea" id="f-diss-obs" placeholder="Descreva a estrutura da prova, critérios de avaliação, etc."></textarea>
+              </div>
+              <label class="form-label" style="margin:12px 0 8px;display:block">Disciplinas da Prova Dissertativa</label>
+              <div class="disciplinas-builder">
+                <div class="disc-header">
+                  <span>Disciplina / Tema</span><span style="text-align:center">Qtd.</span><span style="text-align:center">Peso (%)</span><span></span>
+                </div>
+                <div id="disc-list-dissertativa"></div>
+                <div class="disc-footer">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="addDisc('dissertativa')">+ Adicionar Disciplina</button>
+                  <div class="disc-total" id="disc-total-dissertativa"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ORAL -->
+          <div class="prova-section" id="psec-oral">
+            <div class="toggle-wrap">
+              <div class="toggle" id="tog-oral" onclick="toggleProva('oral')"></div>
+              <span class="toggle-label">Possui prova oral / entrevista</span>
+            </div>
+            <div id="oral-fields" style="display:none">
+              <div class="form-grid" style="margin-bottom:12px">
+                <div class="form-group">
+                  <label class="form-label">Tipo</label>
+                  <select class="form-select" id="f-oral-tipo">
+                    <option value="oral">Prova Oral</option>
+                    <option value="entrevista">Entrevista</option>
+                    <option value="arguicao">Arguição</option>
+                    <option value="defesa">Defesa de Memorial</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nota Máxima</label>
+                  <input class="form-input" id="f-oral-max" type="number" step="0.01" placeholder="Ex: 100">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nota Mínima (aprovação)</label>
+                  <input class="form-input" id="f-oral-min" type="number" step="0.01" placeholder="Ex: 60">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Peso na nota final (%)</label>
+                  <input class="form-input" id="f-oral-peso" type="number" step="0.01" placeholder="Ex: 20">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Duração (minutos)</label>
+                  <input class="form-input" id="f-oral-dur" type="number" placeholder="Ex: 30">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nº de Examinadores</label>
+                  <input class="form-input" id="f-oral-exam" type="number" placeholder="Ex: 3">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Temas / Conteúdo Programático</label>
+                <textarea class="form-textarea" id="f-oral-temas" placeholder="Liste os temas e conteúdos cobrados na prova oral..."></textarea>
+              </div>
+              <div class="form-group" style="margin-top:10px">
+                <label class="form-label">Critérios de Avaliação</label>
+                <textarea class="form-textarea" id="f-oral-criterios" placeholder="Domínio do conteúdo, clareza, postura, argumentação..."></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section-title">📝 Observações Gerais</div>
+        <div class="form-group full">
+          <label class="form-label">Observações</label>
+          <textarea class="form-textarea" id="f-obs" placeholder="Anotações relevantes sobre o concurso..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalNovo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarConcurso()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL REALIZADO ===== -->
+<div class="modal-overlay" id="modalRealizado">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-real-title">Registrar Prova Realizada</div>
+        <div class="modal-subtitle">Notas, desempenho e resultado</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalRealizado')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-real-id">
+      <div class="form-grid">
+        <div class="form-section-title">📌 Identificação</div>
+        <div class="form-group full">
+          <label class="form-label">Nome do Concurso / Cargo *</label>
+          <input class="form-input" id="r-nome" placeholder="Ex: Promotor de Justiça — MPMG">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Órgão</label>
+          <input class="form-input" id="r-orgao" placeholder="Ex: MPMG">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Área</label>
+          <input class="form-input" id="r-area" placeholder="Ex: Jurídica">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data da Prova</label>
+          <input class="form-input" id="r-data" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Banca</label>
+          <input class="form-input" id="r-banca" placeholder="Ex: VUNESP">
+        </div>
+
+        <div class="form-section-title">📊 Notas por Fase</div>
+        <div class="form-group">
+          <label class="form-label">Nota Objetiva</label>
+          <input class="form-input" id="r-objetiva" type="number" step="0.01" placeholder="Ex: 78.50">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mín. aprovação (Obj.)</label>
+          <input class="form-input" id="r-min-obj" type="number" step="0.01" placeholder="Ex: 60.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nota Dissertativa / Redação</label>
+          <input class="form-input" id="r-discursiva" type="number" step="0.01" placeholder="Ex: 85.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mín. aprovação (Disc.)</label>
+          <input class="form-input" id="r-min-disc" type="number" step="0.01" placeholder="Ex: 60.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nota Oral / Entrevista</label>
+          <input class="form-input" id="r-oral" type="number" step="0.01" placeholder="Ex: 90.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mín. aprovação (Oral)</label>
+          <input class="form-input" id="r-min-oral" type="number" step="0.01" placeholder="Ex: 60.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nota Final (Total)</label>
+          <input class="form-input" id="r-final" type="number" step="0.01" placeholder="Ex: 82.30">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nota Máxima Possível</label>
+          <input class="form-input" id="r-max" type="number" step="0.01" placeholder="Ex: 100">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nota de Corte</label>
+          <input class="form-input" id="r-corte" type="number" step="0.01" placeholder="Ex: 70.00">
+        </div>
+
+        <div class="form-section-title">🏆 Resultado e Classificação</div>
+        <div class="form-group">
+          <label class="form-label">Resultado</label>
+          <select class="form-select" id="r-resultado">
+            <option value="aguardando">⏳ Aguardando</option>
+            <option value="aprovado">✅ Aprovado</option>
+            <option value="classificado">🎯 Classificado (nas vagas)</option>
+            <option value="reprovado">❌ Reprovado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Posição no Ranking</label>
+          <input class="form-input" id="r-posicao" placeholder="Ex: 12º lugar">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total de Candidatos</label>
+          <input class="form-input" id="r-candidatos" placeholder="Ex: 1.200">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vagas Oferecidas</label>
+          <input class="form-input" id="r-vagas" placeholder="Ex: 20">
+        </div>
+
+        <div class="form-section-title">📝 Notas por Disciplina</div>
+        <div class="form-group full">
+          <div class="disciplinas-builder">
+            <div class="disc-header">
+              <span>Disciplina</span><span style="text-align:center">Acertos</span><span style="text-align:center">Nota</span><span></span>
+            </div>
+            <div id="disc-list-realizado"></div>
+            <div class="disc-footer">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="addDiscReal()">+ Adicionar Disciplina</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section-title">💬 Avaliação Pessoal</div>
+        <div class="form-group full">
+          <label class="form-label">Autoavaliação / Pontos de Melhora</label>
+          <textarea class="form-textarea" id="r-avaliacao" placeholder="O que foi bem, o que precisa melhorar, lições aprendidas..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Observações Gerais</label>
+          <textarea class="form-textarea" id="r-obs" placeholder="Dificuldade, ambiente, percepções gerais..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalRealizado')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarRealizado()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FIREBASE CONFIG MODAL ===== -->
+<div class="modal-overlay" id="modalFirebase">
+  <div class="firebase-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="modal-title">☁️ Configurar Firebase</div>
+      <button class="modal-close" onclick="closeModal('modalFirebase')">✕</button>
+    </div>
+    <div class="firebase-step">
+      <h3>1. Acesse o Firebase Console</h3>
+      <p>Vá em <a href="https://console.firebase.google.com" target="_blank" style="color:var(--navy)">console.firebase.google.com</a>, crie um projeto e habilite <code>Firestore</code> e <code>Authentication (Google)</code>.</p>
+    </div>
+    <div class="firebase-step">
+      <h3>2. Registre um app Web e copie o config</h3>
+      <p>Em <em>Project Settings → Your apps</em>, clique em <code>&lt;/&gt;</code> para registrar um app web e obtenha o <code>firebaseConfig</code>.</p>
+    </div>
+    <div class="firebase-step">
+      <h3>3. Cole a configuração abaixo</h3>
+      <textarea class="form-textarea" id="fb-config-input" style="font-family:'JetBrains Mono',monospace;font-size:12px;min-height:140px" placeholder='{"apiKey":"AIza...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-secondary" onclick="closeModal('modalFirebase')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarConfigFirebase()">✅ Conectar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let concursos = [];
+let realizados = [];
+let filtroAtivo = 'todos';
+let filtroRAtivo = 'todos';
+let searchTerm = '';
+let db = null, auth = null, currentUser = null;
+let unsubConcursos = null, unsubRealizados = null;
+
+// ===== FIREBASE INIT =====
+function initFirebase(config) {
+  try {
+    const FB = window._firebase;
+    const app = FB.initializeApp(config);
+    db = FB.getFirestore(app);
+    auth = FB.getAuth(app);
+    FB.onAuthStateChanged(auth, user => {
+      currentUser = user;
+      updateSyncUI();
+      if (user) startListeners();
+    });
+    return true;
+  } catch(e) { console.error('Firebase init error', e); return false; }
+}
+
+function startListeners() {
+  const FB = window._firebase;
+  const uid = currentUser.uid;
+
+  if (unsubConcursos) unsubConcursos();
+  if (unsubRealizados) unsubRealizados();
+
+  unsubConcursos = FB.onSnapshot(
+    FB.collection(db, 'users', uid, 'concursos'),
+    snap => {
+      concursos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      saveLocal();
+      renderAll();
+    }
+  );
+
+  unsubRealizados = FB.onSnapshot(
+    FB.collection(db, 'users', uid, 'realizados'),
+    snap => {
+      realizados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      saveLocal();
+      renderAll();
+    }
+  );
+}
+
+async function saveToCloud(col, obj) {
+  if (!db || !currentUser) return;
+  const FB = window._firebase;
+  try {
+    setSyncStatus('syncing');
+    await FB.setDoc(FB.doc(db, 'users', currentUser.uid, col, obj.id), obj);
+    setSyncStatus('online');
+  } catch(e) { console.error(e); setSyncStatus('online'); }
+}
+
+async function deleteFromCloud(col, id) {
+  if (!db || !currentUser) return;
+  const FB = window._firebase;
+  try {
+    await FB.deleteDoc(FB.doc(db, 'users', currentUser.uid, col, id));
+  } catch(e) { console.error(e); }
+}
+
+function setSyncStatus(s) {
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot ' + s;
+  lbl.textContent = s === 'online' ? 'Sincronizado' : s === 'syncing' ? 'Salvando…' : 'Offline';
+}
+
+function updateSyncUI() {
+  const lbl = document.getElementById('loginLabel');
+  const icon = document.getElementById('loginIcon');
+  if (currentUser) {
+    lbl.textContent = currentUser.displayName ? currentUser.displayName.split(' ')[0] : 'Conta';
+    icon.textContent = '👤';
+    setSyncStatus('online');
+  } else {
+    lbl.textContent = 'Sincronizar';
+    icon.textContent = '☁️';
+    setSyncStatus('');
+  }
+}
+
+async function handleAuthAction() {
+  if (!auth) { openModal('modalFirebase'); return; }
+  if (currentUser) {
+    if (confirm('Deseja sair da conta?')) {
+      await window._firebase.signOut(auth);
+      currentUser = null;
+      updateSyncUI();
+      showToast('👋 Sessão encerrada', 'success');
+    }
+    return;
+  }
+  try {
+    const provider = new window._firebase.GoogleAuthProvider();
+    await window._firebase.signInWithPopup(auth, provider);
+    showToast('✅ Login realizado!', 'success');
+  } catch(e) {
+    showToast('Erro no login: ' + e.message, 'error');
+  }
+}
+
+function salvarConfigFirebase() {
+  const raw = document.getElementById('fb-config-input').value.trim();
+  try {
+    const config = JSON.parse(raw);
+    if (!config.apiKey) throw new Error('Config inválido');
+    localStorage.setItem('fb_config', raw);
+    if (initFirebase(config)) {
+      closeModal('modalFirebase');
+      showToast('☁️ Firebase conectado!', 'success');
+    } else {
+      showToast('Erro ao conectar. Verifique a configuração.', 'error');
+    }
+  } catch(e) { showToast('JSON inválido: ' + e.message, 'error'); }
+}
+
+// ===== LOCAL STORAGE =====
+function saveLocal() {
+  localStorage.setItem('cp_concursos', JSON.stringify(concursos));
+  localStorage.setItem('cp_realizados', JSON.stringify(realizados));
+}
+
+function loadLocal() {
+  concursos = JSON.parse(localStorage.getItem('cp_concursos') || '[]');
+  realizados = JSON.parse(localStorage.getItem('cp_realizados') || '[]');
+}
+
+// ===== UTILS =====
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
+function v(id) { const e = document.getElementById(id); return e ? e.value : ''; }
+function fmtDate(d) { if(!d) return '—'; const [y,m,dia]=d.split('-'); return `${dia}/${m}/${y}`; }
+
+const STATUS_LABEL = { previsto:'Previsto', edital:'Edital Publicado', inscricoes:'Inscrições Abertas', encerrado:'Encerrado' };
+const STATUS_CLASS = { previsto:'badge-previsto', edital:'badge-edital', inscricoes:'badge-inscricoes', encerrado:'badge-encerrado' };
+const CC_TOP = { previsto:'navy', edital:'gold', inscricoes:'teal', encerrado:'rose' };
+const RES_LABEL = { aprovado:'✅ Aprovado', reprovado:'❌ Reprovado', aguardando:'⏳ Aguardando', classificado:'🎯 Classificado' };
+const RES_CLASS = { aprovado:'badge-aprovado', reprovado:'badge-reprovado', aguardando:'badge-aguardando', classificado:'badge-classificado' };
+const PRIO_EMOJI = { alta:'🔴', media:'🟡', baixa:'🟢' };
+
+// ===== NAVIGATION =====
+function switchPage(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  if (el) el.classList.add('active');
+  else document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+
+  const btn = document.getElementById('btnNovo');
+  if (page === 'realizados') { btn.textContent = '+ Registrar'; btn.onclick = openModalRealizado; }
+  else { btn.textContent = '+ Novo'; btn.onclick = openModalNovo; }
+  btn.style.display = page === 'dashboard' ? 'none' : 'inline-flex';
+
+  if (page === 'dashboard') renderDashboard();
+}
+
+function goHome() {
+  switchPage('dashboard', null);
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('[data-page="dashboard"]').classList.add('active');
+}
+
+// ===== MODALS =====
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
+
+// ===== PROVAS TABS =====
+function switchProvaTab(tab, el) {
+  document.querySelectorAll('.provas-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.prova-section').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('psec-' + tab).classList.add('active');
+}
+
+function toggleProva(type) {
+  const tog = document.getElementById('tog-' + type);
+  const fields = document.getElementById(type + '-fields');
+  const on = tog.classList.toggle('on');
+  if (fields) fields.style.display = on ? 'block' : 'none';
+}
+
+// ===== DISCIPLINAS BUILDER =====
+function addDisc(ctx, name='', qtd='', peso='') {
+  const list = document.getElementById('disc-list-' + ctx);
+  const row = document.createElement('div');
+  row.className = 'disciplina-row';
+  row.innerHTML = `
+    <input class="disciplina-input" type="text" placeholder="Nome da disciplina" value="${name}" oninput="updateDiscTotal('${ctx}')">
+    <input class="disciplina-num" type="number" min="0" placeholder="0" value="${qtd}" oninput="updateDiscTotal('${ctx}')">
+    <input class="disciplina-peso" type="number" min="0" max="100" step="0.1" placeholder="%" value="${peso}" oninput="updateDiscTotal('${ctx}')">
+    <button type="button" class="btn-remove-disc" onclick="this.closest('.disciplina-row').remove();updateDiscTotal('${ctx}')">✕</button>
+  `;
+  list.appendChild(row);
+  updateDiscTotal(ctx);
+}
+
+function updateDiscTotal(ctx) {
+  const list = document.getElementById('disc-list-' + ctx);
+  const totEl = document.getElementById('disc-total-' + ctx);
+  if (!list || !totEl) return;
+  let totalQtd = 0, totalPeso = 0;
+  list.querySelectorAll('.disciplina-row').forEach(row => {
+    const [, qtdI, pesoI] = row.querySelectorAll('input');
+    totalQtd += parseInt(qtdI.value)||0;
+    totalPeso += parseFloat(pesoI.value)||0;
+  });
+  const pesoColor = Math.abs(totalPeso - 100) < 0.01 ? 'var(--green)' : totalPeso > 100 ? 'var(--rose)' : 'var(--gold)';
+  totEl.innerHTML = `Questões: <strong>${totalQtd}</strong> &nbsp;|&nbsp; Peso total: <strong style="color:${pesoColor}">${totalPeso.toFixed(1)}%</strong>`;
+}
+
+function getDiscs(ctx) {
+  const list = document.getElementById('disc-list-' + ctx);
+  if (!list) return [];
+  return Array.from(list.querySelectorAll('.disciplina-row')).map(row => {
+    const [nomeI, qtdI, pesoI] = row.querySelectorAll('input');
+    return { nome: nomeI.value.trim(), qtd: parseInt(qtdI.value)||0, peso: parseFloat(pesoI.value)||0 };
+  }).filter(d => d.nome);
+}
+
+function loadDiscs(ctx, discs=[]) {
+  const list = document.getElementById('disc-list-' + ctx);
+  if (!list) return;
+  list.innerHTML = '';
+  discs.forEach(d => addDisc(ctx, d.nome, d.qtd, d.peso));
+  if (!discs.length) addDisc(ctx);
+}
+
+// ===== DISCIPLINAS REALIZADO =====
+function addDiscReal(nome='', acertos='', nota='') {
+  const list = document.getElementById('disc-list-realizado');
+  const row = document.createElement('div');
+  row.className = 'disciplina-row';
+  row.innerHTML = `
+    <input class="disciplina-input" type="text" placeholder="Nome da disciplina" value="${nome}">
+    <input class="disciplina-num" type="number" min="0" placeholder="0" value="${acertos}">
+    <input class="disciplina-peso" type="number" min="0" step="0.01" placeholder="—" value="${nota}">
+    <button type="button" class="btn-remove-disc" onclick="this.closest('.disciplina-row').remove()">✕</button>
+  `;
+  list.appendChild(row);
+}
+
+function getDiscsReal() {
+  const list = document.getElementById('disc-list-realizado');
+  return Array.from(list.querySelectorAll('.disciplina-row')).map(row => {
+    const [nomeI, acertosI, notaI] = row.querySelectorAll('input');
+    return { nome: nomeI.value.trim(), acertos: parseInt(acertosI.value)||0, nota: parseFloat(notaI.value)||0 };
+  }).filter(d => d.nome);
+}
+
+function loadDiscsReal(discs=[]) {
+  const list = document.getElementById('disc-list-realizado');
+  list.innerHTML = '';
+  discs.forEach(d => addDiscReal(d.nome, d.acertos, d.nota));
+}
+
+// ===== OPEN MODAL NOVO =====
+function openModalNovo(id=null) {
+  clearForm();
+  document.getElementById('modal-novo-title').textContent = id ? 'Editar Concurso' : 'Novo Concurso';
+  if (id) { const c = concursos.find(x=>x.id===id); if(c) fillForm(c); }
+  else loadDiscs('objetiva'); // default: 1 row
+  openModal('modalNovo');
+}
+
+function clearForm() {
+  ['f-nome','f-orgao','f-area','f-local','f-vagas','f-salario','f-taxa',
+   'f-data-edital','f-data-inicio','f-data-fim','f-data-prova','f-link',
+   'f-banca','f-num-edital','f-obs','edit-id',
+   'f-obj-total','f-obj-min',
+   'f-diss-tipo','f-diss-max','f-diss-min','f-diss-qtd','f-diss-peso','f-diss-dur','f-diss-obs',
+   'f-oral-tipo','f-oral-max','f-oral-min','f-oral-peso','f-oral-dur','f-oral-exam','f-oral-temas','f-oral-criterios'
+  ].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('f-status').value='previsto';
+  document.getElementById('f-nivel').value='';
+  document.getElementById('f-prioridade').value='media';
+  // toggles
+  ['objetiva','dissertativa','oral'].forEach(t => {
+    const tog = document.getElementById('tog-'+t);
+    const fields = document.getElementById(t+'-fields');
+    if (t==='objetiva') { tog.classList.add('on'); if(fields) fields.style.display='block'; }
+    else { tog.classList.remove('on'); if(fields) fields.style.display='none'; }
+  });
+  loadDiscs('objetiva');
+  document.getElementById('disc-list-dissertativa').innerHTML='';
+  document.getElementById('disc-list-oral') && (document.getElementById('disc-list-oral').innerHTML='');
+  // tabs reset
+  document.querySelectorAll('.provas-tab').forEach((t,i) => t.classList.toggle('active',i===0));
+  document.querySelectorAll('.prova-section').forEach((s,i) => s.classList.toggle('active',i===0));
+}
+
+function fillForm(c) {
+  document.getElementById('edit-id').value = c.id;
+  const fields = ['nome','orgao','area','local','vagas','salario','taxa',
+    'data-edital','data-inicio','data-fim','data-prova','link','banca','num-edital','obs'];
+  fields.forEach(f => { const e=document.getElementById('f-'+f); if(e) e.value=c[f.replace('-','_')]||c[f]||''; });
+  // manual
+  document.getElementById('f-nome').value = c.nome||'';
+  document.getElementById('f-orgao').value = c.orgao||'';
+  document.getElementById('f-area').value = c.area||'';
+  document.getElementById('f-local').value = c.local||'';
+  document.getElementById('f-vagas').value = c.vagas||'';
+  document.getElementById('f-salario').value = c.salario||'';
+  document.getElementById('f-taxa').value = c.taxa||'';
+  document.getElementById('f-data-edital').value = c.dataEdital||'';
+  document.getElementById('f-data-inicio').value = c.dataInicio||'';
+  document.getElementById('f-data-fim').value = c.dataFim||'';
+  document.getElementById('f-data-prova').value = c.dataProva||'';
+  document.getElementById('f-link').value = c.link||'';
+  document.getElementById('f-banca').value = c.banca||'';
+  document.getElementById('f-num-edital').value = c.numEdital||'';
+  document.getElementById('f-obs').value = c.obs||'';
+  document.getElementById('f-status').value = c.status||'previsto';
+  document.getElementById('f-nivel').value = c.nivel||'';
+  document.getElementById('f-prioridade').value = c.prioridade||'media';
+  // provas
+  document.getElementById('f-obj-total').value = c.objTotal||'';
+  document.getElementById('f-obj-min').value = c.objMin||'';
+  loadDiscs('objetiva', c.discObjetiva||[]);
+  const togObj = document.getElementById('tog-objetiva');
+  if (c.hasObjetiva===false) { togObj.classList.remove('on'); document.getElementById('objetiva-fields').style.display='none'; }
+  else { togObj.classList.add('on'); document.getElementById('objetiva-fields').style.display='block'; }
+
+  if (c.hasDissertativa) {
+    document.getElementById('tog-dissertativa').classList.add('on');
+    document.getElementById('dissertativa-fields').style.display='block';
+    document.getElementById('f-diss-tipo').value = c.dissTipo||'dissertativa';
+    document.getElementById('f-diss-max').value = c.dissMax||'';
+    document.getElementById('f-diss-min').value = c.dissMin||'';
+    document.getElementById('f-diss-qtd').value = c.dissQtd||'';
+    document.getElementById('f-diss-peso').value = c.dissPeso||'';
+    document.getElementById('f-diss-dur').value = c.dissDur||'';
+    document.getElementById('f-diss-obs').value = c.dissObs||'';
+    loadDiscs('dissertativa', c.discDissertativa||[]);
+  }
+  if (c.hasOral) {
+    document.getElementById('tog-oral').classList.add('on');
+    document.getElementById('oral-fields').style.display='block';
+    document.getElementById('f-oral-tipo').value = c.oralTipo||'oral';
+    document.getElementById('f-oral-max').value = c.oralMax||'';
+    document.getElementById('f-oral-min').value = c.oralMin||'';
+    document.getElementById('f-oral-peso').value = c.oralPeso||'';
+    document.getElementById('f-oral-dur').value = c.oralDur||'';
+    document.getElementById('f-oral-exam').value = c.oralExam||'';
+    document.getElementById('f-oral-temas').value = c.oralTemas||'';
+    document.getElementById('f-oral-criterios').value = c.oralCriterios||'';
+  }
+}
+
+function salvarConcurso() {
+  const nome = v('f-nome').trim();
+  if (!nome) { showToast('⚠️ Informe o nome do concurso', 'error'); return; }
+  const editId = v('edit-id');
+  const hasObjetiva = document.getElementById('tog-objetiva').classList.contains('on');
+  const hasDissertativa = document.getElementById('tog-dissertativa').classList.contains('on');
+  const hasOral = document.getElementById('tog-oral').classList.contains('on');
+  const obj = {
+    id: editId || uid(),
+    nome, orgao:v('f-orgao'), area:v('f-area'), local:v('f-local'),
+    vagas:v('f-vagas'), salario:v('f-salario'), taxa:v('f-taxa'),
+    dataEdital:v('f-data-edital'), dataInicio:v('f-data-inicio'),
+    dataFim:v('f-data-fim'), dataProva:v('f-data-prova'),
+    link:v('f-link'), banca:v('f-banca'), numEdital:v('f-num-edital'),
+    obs:v('f-obs'), status:v('f-status'), nivel:v('f-nivel'), prioridade:v('f-prioridade'),
+    hasObjetiva, objTotal:v('f-obj-total'), objMin:v('f-obj-min'),
+    discObjetiva: hasObjetiva ? getDiscs('objetiva') : [],
+    hasDissertativa,
+    dissTipo:v('f-diss-tipo'), dissMax:v('f-diss-max'), dissMin:v('f-diss-min'),
+    dissQtd:v('f-diss-qtd'), dissPeso:v('f-diss-peso'), dissDur:v('f-diss-dur'), dissObs:v('f-diss-obs'),
+    discDissertativa: hasDissertativa ? getDiscs('dissertativa') : [],
+    hasOral,
+    oralTipo:v('f-oral-tipo'), oralMax:v('f-oral-max'), oralMin:v('f-oral-min'),
+    oralPeso:v('f-oral-peso'), oralDur:v('f-oral-dur'), oralExam:v('f-oral-exam'),
+    oralTemas:v('f-oral-temas'), oralCriterios:v('f-oral-criterios'),
+    updatedAt: new Date().toISOString()
+  };
+  if (!editId) obj.createdAt = new Date().toISOString();
+  const idx = concursos.findIndex(x=>x.id===obj.id);
+  if (idx>=0) concursos[idx]=obj; else concursos.push(obj);
+  saveLocal();
+  saveToCloud('concursos', obj);
+  closeModal('modalNovo');
+  renderAll();
+  showToast('✅ Concurso salvo!', 'success');
+}
+
+// ===== REALIZADO FORM =====
+function openModalRealizado(id=null) {
+  clearFormReal();
+  document.getElementById('modal-real-title').textContent = id ? 'Editar Registro' : 'Registrar Prova Realizada';
+  if (id) { const r=realizados.find(x=>x.id===id); if(r) fillFormReal(r); }
+  else addDiscReal();
+  openModal('modalRealizado');
+}
+
+function clearFormReal() {
+  ['r-nome','r-orgao','r-area','r-data','r-banca','r-objetiva','r-min-obj',
+   'r-discursiva','r-min-disc','r-oral','r-min-oral','r-final','r-max','r-corte',
+   'r-posicao','r-candidatos','r-vagas','r-avaliacao','r-obs','edit-real-id']
+  .forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('r-resultado').value='aguardando';
+  document.getElementById('disc-list-realizado').innerHTML='';
+}
+
+function fillFormReal(r) {
+  document.getElementById('edit-real-id').value=r.id;
+  ['nome','orgao','area','data','banca','objetiva','discursiva','oral','final','max','corte','posicao','candidatos','vagas','avaliacao','obs'].forEach(k => {
+    const e=document.getElementById('r-'+k); if(e) e.value=r[k]||'';
+  });
+  const mo=document.getElementById('r-min-obj'); if(mo) mo.value=r.minObj||'';
+  const md=document.getElementById('r-min-disc'); if(md) md.value=r.minDisc||'';
+  const mo2=document.getElementById('r-min-oral'); if(mo2) mo2.value=r.minOral||'';
+  document.getElementById('r-resultado').value=r.resultado||'aguardando';
+  loadDiscsReal(r.disciplinas||[]);
+}
+
+function salvarRealizado() {
+  const nome = v('r-nome').trim();
+  if (!nome) { showToast('⚠️ Informe o nome do concurso', 'error'); return; }
+  const editId = v('edit-real-id');
+  const obj = {
+    id: editId||uid(), nome, orgao:v('r-orgao'), area:v('r-area'),
+    data:v('r-data'), banca:v('r-banca'),
+    objetiva:v('r-objetiva'), minObj:v('r-min-obj'),
+    discursiva:v('r-discursiva'), minDisc:v('r-min-disc'),
+    oral:v('r-oral'), minOral:v('r-min-oral'),
+    final:v('r-final'), max:v('r-max'), corte:v('r-corte'),
+    resultado:v('r-resultado'), posicao:v('r-posicao'),
+    candidatos:v('r-candidatos'), vagas:v('r-vagas'),
+    disciplinas: getDiscsReal(),
+    avaliacao:v('r-avaliacao'), obs:v('r-obs'),
+    updatedAt: new Date().toISOString()
+  };
+  if (!editId) obj.createdAt=new Date().toISOString();
+  const idx=realizados.findIndex(x=>x.id===obj.id);
+  if(idx>=0) realizados[idx]=obj; else realizados.push(obj);
+  saveLocal();
+  saveToCloud('realizados', obj);
+  closeModal('modalRealizado');
+  renderAll();
+  showToast('✅ Registro salvo!', 'success');
+}
+
+// ===== DELETE =====
+function del(id, e) {
+  e&&e.stopPropagation();
+  if(!confirm('Remover este concurso?')) return;
+  concursos=concursos.filter(x=>x.id!==id);
+  saveLocal(); deleteFromCloud('concursos',id); renderAll();
+  showToast('🗑️ Removido', 'success');
+}
+
+function delR(id, e) {
+  e&&e.stopPropagation();
+  if(!confirm('Remover este registro?')) return;
+  realizados=realizados.filter(x=>x.id!==id);
+  saveLocal(); deleteFromCloud('realizados',id); renderAll();
+  showToast('🗑️ Removido', 'success');
+}
+
+// ===== FILTERS =====
+function setFiltro(f, el) {
+  filtroAtivo=f;
+  document.querySelectorAll('#filtros-prev .filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); renderPrevistos();
+}
+function setFiltroR(f, el) {
+  filtroRAtivo=f;
+  document.querySelectorAll('#filtros-real .filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active'); renderRealizados();
+}
+function filtrar(val) { searchTerm=val.toLowerCase(); renderPrevistos(); }
+
+// ===== RENDER ALL =====
+function renderAll() {
+  renderPrevistos();
+  renderRealizados();
+  renderDashboard();
+}
+
+// ===== RENDER PREVISTOS =====
+function renderPrevistos() {
+  const grid=document.getElementById('grid-previstos');
+  const empty=document.getElementById('empty-previstos');
+  let data=concursos.filter(c=>{
+    if(filtroAtivo!=='todos'&&c.status!==filtroAtivo) return false;
+    if(searchTerm&&!c.nome.toLowerCase().includes(searchTerm)&&!(c.orgao||'').toLowerCase().includes(searchTerm)) return false;
+    return true;
+  });
+  if(!data.length){ grid.innerHTML=''; grid.style.display='none'; empty.style.display='block'; return; }
+  grid.style.display='grid'; empty.style.display='none';
+  grid.innerHTML=data.map(c=>`
+    <div class="concurso-card" onclick="showDetalhe('${c.id}')">
+      <div class="cc-top ${CC_TOP[c.status]||'navy'}"></div>
+      <div class="cc-body">
+        <div class="cc-header">
+          <div>
+            <div class="cc-title">${c.nome}</div>
+            <div class="cc-org">${c.orgao||'—'}</div>
+          </div>
+          <span class="badge ${STATUS_CLASS[c.status]||'badge-previsto'}">${STATUS_LABEL[c.status]||'Previsto'}</span>
+        </div>
+        <div class="cc-meta">
+          <div class="meta-item"><label>Vagas</label><span>${c.vagas||'—'}</span></div>
+          <div class="meta-item"><label>Salário</label><span>${c.salario||'—'}</span></div>
+          <div class="meta-item"><label>Prova</label><span>${fmtDate(c.dataProva)}</span></div>
+          <div class="meta-item"><label>Banca</label><span>${c.banca||'—'}</span></div>
+        </div>
+        <div class="cc-tags">
+          ${c.nivel?`<span class="tag">${c.nivel}</span>`:''}
+          ${c.area?`<span class="tag">${c.area}</span>`:''}
+          ${c.local?`<span class="tag">📍${c.local}</span>`:''}
+          ${c.prioridade?`<span class="tag">${PRIO_EMOJI[c.prioridade]} ${c.prioridade}</span>`:''}
+          ${c.hasDissertativa?`<span class="tag" style="color:var(--teal);border-color:rgba(13,139,131,.2);background:var(--teal-bg)">✍ Dissertativa</span>`:''}
+          ${c.hasOral?`<span class="tag" style="color:var(--purple);border-color:rgba(107,63,160,.2);background:var(--purple-bg)">🎙 Oral</span>`:''}
+        </div>
+      </div>
+      <div class="cc-footer">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openModalNovo('${c.id}')">✏️ Editar</button>
+        ${c.link?`<a class="btn btn-secondary btn-sm" href="${c.link}" target="_blank" onclick="event.stopPropagation()">🔗 Edital</a>`:''}
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="del('${c.id}',event)">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== RENDER REALIZADOS =====
+function renderRealizados() {
+  const grid=document.getElementById('grid-realizados');
+  const empty=document.getElementById('empty-realizados');
+  let data=realizados.filter(r=>filtroRAtivo==='todos'||r.resultado===filtroRAtivo);
+  if(!data.length){ grid.innerHTML=''; grid.style.display='none'; empty.style.display='block'; return; }
+  grid.style.display='grid'; empty.style.display='none';
+  grid.innerHTML=data.map(r=>{
+    const nf=parseFloat(r.final)||0, nm=parseFloat(r.max)||100;
+    const pct=Math.round(nf/nm*100);
+    const scPct=(pct/100)*2*Math.PI*38;
+    const scColor=pct>=70?'var(--green)':pct>=50?'var(--gold)':'var(--rose)';
+    return `
+    <div class="realizado-card" onclick="showDetalheReal('${r.id}')">
+      <div class="rc-top"></div>
+      <div class="cc-body">
+        <div class="cc-header">
+          <div>
+            <div class="cc-title">${r.nome}</div>
+            <div class="cc-org">${r.orgao||'—'}${r.data?' · '+fmtDate(r.data):''}</div>
+          </div>
+          <span class="badge ${RES_CLASS[r.resultado]||'badge-aguardando'}">${RES_LABEL[r.resultado]||'Aguardando'}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="text-align:center">
+            <div class="score-circle" style="width:88px;height:88px">
+              <svg width="88" height="88" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="38" fill="none" stroke="var(--surface3)" stroke-width="9"/>
+                <circle cx="50" cy="50" r="38" fill="none" stroke="${scColor}" stroke-width="9"
+                  stroke-dasharray="${scPct.toFixed(1)} 999" stroke-linecap="round"
+                  style="transform:rotate(-90deg);transform-origin:50% 50%"/>
+              </svg>
+              <div class="score-circle-text">
+                <div class="score-number" style="color:${scColor};font-size:18px">${r.final||'—'}</div>
+                <div class="score-max">/${r.max||'100'}</div>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-top:3px">Nota Final</div>
+          </div>
+          <div class="cc-meta" style="flex:1;min-width:110px">
+            <div class="meta-item"><label>Objetiva</label><span>${r.objetiva||'—'}</span></div>
+            <div class="meta-item"><label>Dissertativa</label><span>${r.discursiva||'—'}</span></div>
+            <div class="meta-item"><label>Posição</label><span>${r.posicao||'—'}</span></div>
+            <div class="meta-item"><label>Vagas</label><span>${r.vagas||'—'}</span></div>
+          </div>
+        </div>
+        <div class="cc-tags" style="margin-top:10px">
+          ${r.area?`<span class="tag">${r.area}</span>`:''}
+          ${r.banca?`<span class="tag">${r.banca}</span>`:''}
+          ${r.candidatos?`<span class="tag">👥${r.candidatos}</span>`:''}
+        </div>
+      </div>
+      <div class="cc-footer">
+        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openModalRealizado('${r.id}')">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="delR('${r.id}',event)">🗑️</button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+// ===== DETAIL CONCURSO =====
+function showDetalhe(id) {
+  const c=concursos.find(x=>x.id===id); if(!c) return;
+  document.getElementById('det-title').textContent=c.nome;
+  document.getElementById('det-org').textContent=(c.orgao||'')+(c.numEdital?' · Edital '+c.numEdital:'');
+
+  const si={'previsto':0,'edital':1,'inscricoes':2,'encerrado':3}[c.status]||0;
+  const stages=[
+    {label:'Publicação do Edital',date:c.dataEdital},
+    {label:'Início das Inscrições',date:c.dataInicio},
+    {label:'Término das Inscrições',date:c.dataFim},
+    {label:'Realização da Prova',date:c.dataProva}
+  ];
+  const tl=stages.map((s,i)=>`
+    <div class="timeline-item ${i<si?'done':i===si?'current':''}">
+      <div class="timeline-dot"></div>
+      <div class="timeline-date">${fmtDate(s.date)||'A definir'}</div>
+      <div class="timeline-label">${s.label}</div>
+    </div>`).join('');
+
+  // Build provas HTML
+  let provasHtml = '';
+  if(c.hasObjetiva!==false) {
+    const discs = c.discObjetiva||[];
+    provasHtml += `<div class="section-sep">📝 Prova Objetiva</div>
+    <div class="detail-meta-grid" style="margin-bottom:12px">
+      ${c.objTotal?`<div class="detail-meta-item"><label>Total Questões</label><span>${c.objTotal}</span></div>`:''}
+      ${c.objMin?`<div class="detail-meta-item"><label>Mín. Aprovação</label><span>${c.objMin}</span></div>`:''}
+    </div>`;
+    if(discs.length) {
+      let totalQ=discs.reduce((a,d)=>a+d.qtd,0);
+      provasHtml += `<div style="margin-bottom:16px">
+        <div class="bar-chart">
+          ${discs.map(d=>`<div class="bar-item"><div class="bar-label">${d.nome}</div><div class="bar-track"><div class="bar-fill navy" style="width:${totalQ?d.qtd/totalQ*100:0}%"></div></div><div class="bar-value">${d.qtd}q${d.peso?` · ${d.peso}%`:''}</div></div>`).join('')}
+        </div>
+      </div>`;
+    }
+  }
+  if(c.hasDissertativa) {
+    provasHtml += `<div class="section-sep">✍ Prova ${c.dissTipo||'Dissertativa'}</div>
+    <div class="detail-meta-grid" style="margin-bottom:12px">
+      ${c.dissMax?`<div class="detail-meta-item"><label>Nota Máx.</label><span>${c.dissMax}</span></div>`:''}
+      ${c.dissMin?`<div class="detail-meta-item"><label>Mín. Aprovação</label><span>${c.dissMin}</span></div>`:''}
+      ${c.dissQtd?`<div class="detail-meta-item"><label>Nº Questões</label><span>${c.dissQtd}</span></div>`:''}
+      ${c.dissPeso?`<div class="detail-meta-item"><label>Peso</label><span>${c.dissPeso}%</span></div>`:''}
+      ${c.dissDur?`<div class="detail-meta-item"><label>Duração</label><span>${c.dissDur}h</span></div>`:''}
+    </div>
+    ${c.dissObs?`<div class="note-box">${c.dissObs}</div>`:''}`;
+  }
+  if(c.hasOral) {
+    provasHtml += `<div class="section-sep">🎙 ${c.oralTipo||'Prova Oral'}</div>
+    <div class="detail-meta-grid" style="margin-bottom:12px">
+      ${c.oralMax?`<div class="detail-meta-item"><label>Nota Máx.</label><span>${c.oralMax}</span></div>`:''}
+      ${c.oralMin?`<div class="detail-meta-item"><label>Mín. Aprovação</label><span>${c.oralMin}</span></div>`:''}
+      ${c.oralPeso?`<div class="detail-meta-item"><label>Peso</label><span>${c.oralPeso}%</span></div>`:''}
+      ${c.oralDur?`<div class="detail-meta-item"><label>Duração</label><span>${c.oralDur}min</span></div>`:''}
+      ${c.oralExam?`<div class="detail-meta-item"><label>Examinadores</label><span>${c.oralExam}</span></div>`:''}
+    </div>
+    ${c.oralTemas?`<div class="note-box" style="border-color:var(--purple);margin-bottom:8px"><strong style="color:var(--purple)">Temas:</strong> ${c.oralTemas}</div>`:''}
+    ${c.oralCriterios?`<div class="note-box"><strong>Critérios:</strong> ${c.oralCriterios}</div>`:''}`;
+  }
+
+  document.getElementById('det-body').innerHTML=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="badge ${STATUS_CLASS[c.status]}">${STATUS_LABEL[c.status]}</span>
+      ${c.nivel?`<span class="badge" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border)">${c.nivel}</span>`:''}
+      ${c.prioridade?`<span class="badge" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border)">${PRIO_EMOJI[c.prioridade]} ${c.prioridade}</span>`:''}
+    </div>
+    <div class="detail-meta-grid" style="margin-bottom:20px">
+      <div class="detail-meta-item"><label>Vagas</label><span>${c.vagas||'—'}</span></div>
+      <div class="detail-meta-item"><label>Salário</label><span>${c.salario||'—'}</span></div>
+      <div class="detail-meta-item"><label>Taxa</label><span>${c.taxa||'—'}</span></div>
+      <div class="detail-meta-item"><label>Banca</label><span>${c.banca||'—'}</span></div>
+      <div class="detail-meta-item"><label>Área</label><span>${c.area||'—'}</span></div>
+      <div class="detail-meta-item"><label>Local</label><span>${c.local||'—'}</span></div>
+    </div>
+    <div class="section-sep">Cronograma</div>
+    <div class="timeline" style="margin-bottom:20px">${tl}</div>
+    ${provasHtml}
+    ${c.obs?`<div class="section-sep">Observações</div><div class="note-box">${c.obs}</div>`:''}
+    ${c.link?`<div style="margin-top:16px"><a class="btn btn-primary" href="${c.link}" target="_blank">🔗 Acessar Edital Oficial</a></div>`:''}
+    <div style="margin-top:18px;display:flex;gap:8px">
+      <button class="btn btn-secondary" onclick="closeModal('modalDetalhe');openModalNovo('${c.id}')">✏️ Editar</button>
+    </div>
+  `;
+  openModal('modalDetalhe');
+}
+
+// ===== DETAIL REALIZADO =====
+function showDetalheReal(id) {
+  const r=realizados.find(x=>x.id===id); if(!r) return;
+  document.getElementById('det-title').textContent=r.nome;
+  document.getElementById('det-org').textContent=(r.orgao||'')+(r.data?' · '+fmtDate(r.data):'');
+
+  const nf=parseFloat(r.final)||0, nm=parseFloat(r.max)||100;
+  const pct=Math.round(nf/nm*100);
+  const scPct=(pct/100)*2*Math.PI*38;
+  const scColor=pct>=70?'var(--green)':pct>=50?'var(--gold)':'var(--rose)';
+
+  let discsHtml='';
+  if(r.disciplinas&&r.disciplinas.length) {
+    const maxN=Math.max(...r.disciplinas.map(d=>d.nota),10);
+    discsHtml=`<div class="section-sep">Notas por Disciplina</div>
+    <div class="bar-chart" style="margin-bottom:16px">
+      ${r.disciplinas.map(d=>`<div class="bar-item"><div class="bar-label">${d.nome}</div><div class="bar-track"><div class="bar-fill teal" style="width:${maxN?d.nota/maxN*100:0}%"></div></div><div class="bar-value">${d.nota}${d.acertos?' ('+d.acertos+'ac.)':''}</div></div>`).join('')}
+    </div>`;
+  }
+
+  document.getElementById('det-body').innerHTML=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="badge ${RES_CLASS[r.resultado]}">${RES_LABEL[r.resultado]}</span>
+      ${r.banca?`<span class="badge" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border)">${r.banca}</span>`:''}
+      ${r.area?`<span class="badge" style="background:var(--surface3);color:var(--text2);border:1px solid var(--border)">${r.area}</span>`:''}
+    </div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:20px">
+      <div style="text-align:center">
+        <div class="score-circle">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="38" fill="none" stroke="var(--surface3)" stroke-width="9"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="${scColor}" stroke-width="9"
+              stroke-dasharray="${scPct.toFixed(1)} 999" stroke-linecap="round"
+              style="transform:rotate(-90deg);transform-origin:50% 50%"/>
+          </svg>
+          <div class="score-circle-text">
+            <div class="score-number" style="color:${scColor}">${r.final||'—'}</div>
+            <div class="score-max">/${r.max||'100'}</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Nota Final</div>
+      </div>
+      <div class="detail-meta-grid" style="flex:1;min-width:180px">
+        <div class="detail-meta-item"><label>Objetiva</label><span>${r.objetiva||'—'}</span></div>
+        <div class="detail-meta-item"><label>Dissertativa</label><span>${r.discursiva||'—'}</span></div>
+        <div class="detail-meta-item"><label>Oral</label><span>${r.oral||'—'}</span></div>
+        <div class="detail-meta-item"><label>Corte</label><span>${r.corte||'—'}</span></div>
+        <div class="detail-meta-item"><label>Posição</label><span>${r.posicao||'—'}</span></div>
+        <div class="detail-meta-item"><label>Candidatos</label><span>${r.candidatos||'—'}</span></div>
+      </div>
+    </div>
+    ${discsHtml}
+    ${r.avaliacao?`<div class="section-sep">Autoavaliação</div><div class="note-box" style="border-color:var(--teal)">${r.avaliacao}</div>`:''}
+    ${r.obs?`<div class="section-sep">Observações</div><div class="note-box">${r.obs}</div>`:''}
+    <div style="margin-top:18px"><button class="btn btn-secondary" onclick="closeModal('modalDetalhe');openModalRealizado('${r.id}')">✏️ Editar</button></div>
+  `;
+  openModal('modalDetalhe');
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  renderDashStats();
+  renderDonut();
+  renderAreas();
+  renderEvolucao();
+  renderProximos();
+  renderRanking();
+}
+
+function renderDashStats() {
+  const total=concursos.length;
+  const nRealizados=realizados.length;
+  const aprovados=realizados.filter(r=>r.resultado==='aprovado'||r.resultado==='classificado').length;
+  const notas=realizados.map(r=>parseFloat(r.final)).filter(n=>!isNaN(n)&&n>0);
+  const media=notas.length?notas.reduce((a,b)=>a+b,0)/notas.length:null;
+  const melhor=notas.length?Math.max(...notas):null;
+  const abertos=concursos.filter(c=>c.status==='inscricoes').length;
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-card-accent acc-navy"></div><div class="stat-value c-navy">${total}</div><div class="stat-label">Concursos Seguidos</div></div>
+    <div class="stat-card"><div class="stat-card-accent acc-teal"></div><div class="stat-value c-teal">${nRealizados}</div><div class="stat-label">Provas Realizadas</div></div>
+    <div class="stat-card"><div class="stat-card-accent acc-green"></div><div class="stat-value c-green">${aprovados}</div><div class="stat-label">Aprovações</div></div>
+    <div class="stat-card"><div class="stat-card-accent acc-gold"></div><div class="stat-value c-gold">${media?media.toFixed(1):'—'}</div><div class="stat-label">Média Geral</div></div>
+    <div class="stat-card"><div class="stat-card-accent acc-rose"></div><div class="stat-value c-rose">${melhor?melhor.toFixed(1):'—'}</div><div class="stat-label">Melhor Nota</div></div>
+    <div class="stat-card"><div class="stat-card-accent acc-blue"></div><div class="stat-value c-blue">${abertos}</div><div class="stat-label">Inscrições Abertas</div></div>
+  `;
+}
+
+function renderDonut() {
+  const svg=document.getElementById('donut-svg');
+  const legend=document.getElementById('donut-legend');
+  const counts={aprovado:0,classificado:0,aguardando:0,reprovado:0};
+  realizados.forEach(r=>{if(counts[r.resultado]!==undefined)counts[r.resultado]++;});
+  const total=Object.values(counts).reduce((a,b)=>a+b,0);
+  if(!total){
+    svg.innerHTML=`<circle cx="55" cy="55" r="38" fill="none" stroke="#eef0f6" stroke-width="16"/>
+    <text x="55" y="60" text-anchor="middle" fill="#8896a8" font-family="Inter" font-size="11">Sem dados</text>`;
+    legend.innerHTML=''; return;
+  }
+  const colors={aprovado:'#1a7a4a',classificado:'#6b3fa0',aguardando:'#1d5fa6',reprovado:'#c0392b'};
+  const labels={aprovado:'Aprovado',classificado:'Classificado',aguardando:'Aguardando',reprovado:'Reprovado'};
+  const R=38,cx=55,cy=55; let off=0;
+  const circles=Object.entries(counts).map(([k,v])=>{
+    if(!v)return'';
+    const pct=v/total, dash=pct*2*Math.PI*R, gap=(1-pct)*2*Math.PI*R, rot=off*360-90;
+    off+=pct;
+    return `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${colors[k]}" stroke-width="16" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" style="transform:rotate(${rot}deg);transform-origin:${cx}px ${cy}px"/>`;
+  });
+  svg.setAttribute('viewBox','0 0 110 110');
+  svg.innerHTML=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#eef0f6" stroke-width="16"/>` + circles.join('');
+  legend.innerHTML=Object.entries(counts).filter(([,v])=>v>0).map(([k,v])=>`
+    <div class="legend-item"><div class="legend-dot" style="background:${colors[k]}"></div>${labels[k]}: <strong>${v}</strong></div>`).join('');
+}
+
+function renderAreas() {
+  const el=document.getElementById('dash-areas');
+  if(!realizados.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Sem dados</div>';return;}
+  const map={};
+  realizados.forEach(r=>{const a=r.area||'Sem área';if(!map[a]){map[a]={count:0,total:0};}map[a].count++;const n=parseFloat(r.final);if(!isNaN(n))map[a].total+=n;});
+  const areas=Object.entries(map).map(([a,v])=>({area:a,media:v.count?v.total/v.count:0}));
+  const maxM=Math.max(...areas.map(a=>a.media),10);
+  const cls=['navy','teal','green','rose','blue','gold'];
+  el.innerHTML=areas.slice(0,6).map((a,i)=>`<div class="bar-item"><div class="bar-label">${a.area}</div><div class="bar-track"><div class="bar-fill ${cls[i%cls.length]}" style="width:${(a.media/maxM*100).toFixed(0)}%"></div></div><div class="bar-value">${a.media.toFixed(1)}</div></div>`).join('');
+}
+
+function renderEvolucao() {
+  const svg=document.getElementById('evolucao-svg');
+  const sorted=[...realizados].filter(r=>r.data&&parseFloat(r.final)).sort((a,b)=>a.data.localeCompare(b.data));
+  if(sorted.length<2){
+    svg.innerHTML=`<text x="350" y="75" text-anchor="middle" fill="#8896a8" font-family="Inter,sans-serif" font-size="13">Adicione pelo menos 2 registros para ver a evolução</text>`;
+    return;
+  }
+  const notas=sorted.map(r=>parseFloat(r.final));
+  const maxN=Math.max(...notas)*1.1, minN=Math.max(0,Math.min(...notas)*0.9), range=maxN-minN||1;
+  const W=700,H=140,pad=32;
+  const pts=notas.map((n,i)=>{
+    const x=pad+(i/(notas.length-1))*(W-2*pad);
+    const y=H-pad-((n-minN)/range)*(H-2*pad);
+    return[x,y];
+  });
+  const path='M '+pts.map(([x,y])=>`${x},${y}`).join(' L ');
+  const area=path+` L ${pts[pts.length-1][0]},${H-pad} L ${pts[0][0]},${H-pad} Z`;
+  svg.innerHTML=`
+    <defs><linearGradient id="aG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${'#1a2340'}" stop-opacity="0.12"/><stop offset="100%" stop-color="#1a2340" stop-opacity="0"/></linearGradient></defs>
+    <path d="${area}" fill="url(#aG)"/>
+    <path d="${path}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${pts.map(([x,y],i)=>`
+      <circle cx="${x}" cy="${y}" r="4.5" fill="var(--navy)" stroke="white" stroke-width="2"/>
+      <text x="${x}" y="${y-10}" text-anchor="middle" fill="var(--navy)" font-family="JetBrains Mono,monospace" font-size="11" font-weight="500">${notas[i]}</text>
+      <text x="${x}" y="${H-8}" text-anchor="middle" fill="var(--text3)" font-family="Inter,sans-serif" font-size="10">${fmtDate(sorted[i].data)}</text>
+    `).join('')}
+  `;
+}
+
+function renderProximos() {
+  const el=document.getElementById('dash-proximos');
+  const hoje=new Date();
+  const eventos=[];
+  concursos.forEach(c=>{
+    const dates=[
+      {label:`Edital — ${c.nome}`,date:c.dataEdital,org:c.orgao},
+      {label:`Inscrições: início — ${c.nome}`,date:c.dataInicio,org:c.orgao},
+      {label:`Inscrições: término — ${c.nome}`,date:c.dataFim,org:c.orgao},
+      {label:`Prova — ${c.nome}`,date:c.dataProva,org:c.orgao}
+    ];
+    dates.forEach(d=>{if(d.date&&new Date(d.date+'T23:59:59')>=hoje) eventos.push(d);});
+  });
+  eventos.sort((a,b)=>a.date.localeCompare(b.date));
+  if(!eventos.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Nenhum evento próximo</div>';return;}
+  el.innerHTML=eventos.slice(0,5).map(ev=>{
+    const d=new Date(ev.date+'T12:00:00');
+    const diff=Math.ceil((d-hoje)/864e5);
+    const urg=diff<=7?'urgente':diff<=30?'breve':'ok';
+    const urgLabel=diff<=0?'Hoje':diff===1?'Amanhã':`${diff}d`;
+    return `<div class="prox-item">
+      <div class="prox-date-box">
+        <div class="prox-day">${d.getDate().toString().padStart(2,'0')}</div>
+        <div class="prox-month">${d.toLocaleString('pt-BR',{month:'short'}).toUpperCase()}</div>
+      </div>
+      <div class="prox-info">
+        <div class="prox-title">${ev.label}</div>
+        <div class="prox-desc">${ev.org||''}</div>
+      </div>
+      <span class="prox-urgency ${urg}">${urgLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderRanking() {
+  const el=document.getElementById('dash-ranking');
+  const sorted=[...realizados].filter(r=>parseFloat(r.final)).sort((a,b)=>parseFloat(b.final)-parseFloat(a.final));
+  if(!sorted.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Sem dados de nota</div>';return;}
+  const medals=['🥇','🥈','🥉'];
+  el.innerHTML=`<table class="nota-table">
+    <thead><tr><th>#</th><th>Concurso</th><th>Nota</th><th>Resultado</th></tr></thead>
+    <tbody>${sorted.slice(0,8).map((r,i)=>`
+      <tr onclick="showDetalheReal('${r.id}')">
+        <td>${medals[i]||(i+1)+'º'}</td>
+        <td><strong>${r.nome}</strong><div style="font-size:11px;color:var(--text3)">${r.orgao||''}</div></td>
+        <td><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--navy)">${r.final}</span></td>
+        <td><span class="badge ${RES_CLASS[r.resultado]}">${RES_LABEL[r.resultado]}</span></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ===== TOAST =====
+function showToast(msg, type='success') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+type;
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ===== INIT =====
+loadLocal();
+// Try to restore Firebase config
+const savedFbConfig = localStorage.getItem('fb_config');
+if (savedFbConfig) {
+  try { initFirebase(JSON.parse(savedFbConfig)); } catch(e) { console.warn('Firebase config error', e); }
+}
+renderAll();
+// Show btn
+document.getElementById('btnNovo').style.display='none';
+</script>
+</body>
+</html>
