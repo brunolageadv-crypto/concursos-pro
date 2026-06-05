@@ -2,8 +2,26 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ConcursosPro · Painel Estratégico</title>
+<meta name="description" content="Gerencie seus concursos públicos com inteligência">
+
+<!-- PWA: tela cheia como app nativo -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ConcursosPro">
+<meta name="application-name" content="ConcursosPro">
+<meta name="theme-color" content="#1a2340">
+<meta name="msapplication-TileColor" content="#1a2340">
+<meta name="msapplication-navbutton-color" content="#1a2340">
+
+<!-- Ícone para iOS (tela inicial) -->
+<link rel="apple-touch-icon" href="https://via.placeholder.com/180x180/1a2340/c9a84c?text=CP">
+<link rel="apple-touch-startup-image" href="https://via.placeholder.com/2048x2732/1a2340/c9a84c?text=ConcursosPro">
+
+<!-- Manifest inline para PWA -->
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
 <!-- Firebase SDK -->
@@ -714,6 +732,122 @@ body {
 .pwa-banner .pwa-btn{background:white;color:var(--navy);border:none;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
 .pwa-banner .pwa-dismiss{background:transparent;border:none;color:rgba(255,255,255,0.6);font-size:18px;cursor:pointer;padding:4px 8px}
 
+
+/* ===== WIZARD ===== */
+.wizard-step {
+  flex:1; text-align:center; padding:8px 4px; font-size:11px; font-weight:600;
+  color:var(--text3); cursor:pointer; transition:all 0.2s; position:relative;
+  display:flex; align-items:center; justify-content:center; gap:5px;
+}
+.wizard-step span {
+  width:20px; height:20px; border-radius:50%; background:var(--border2);
+  color:var(--text3); display:inline-flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; flex-shrink:0; transition:all 0.2s;
+}
+.wizard-step.active { color:var(--navy); }
+.wizard-step.active span { background:var(--navy); color:white; }
+.wizard-step.done { color:var(--green); }
+.wizard-step.done span { background:var(--green); color:white; }
+.wizard-pane { display:none; }
+.wizard-pane.active { display:block; }
+
+/* ===== BTN GROUP SELECT ===== */
+.btn-group-select {
+  display:flex; flex-wrap:wrap; gap:6px;
+}
+.bgs-btn {
+  padding:7px 14px; border-radius:8px; border:1.5px solid var(--border);
+  background:white; font-family:'Inter',sans-serif; font-size:13px; font-weight:500;
+  cursor:pointer; transition:all 0.18s; color:var(--text2);
+}
+.bgs-btn.active {
+  background:var(--navy); color:white; border-color:var(--navy);
+  box-shadow:0 2px 8px rgba(26,35,64,0.2);
+}
+.bgs-btn:hover:not(.active) { border-color:var(--navy); color:var(--navy); }
+
+/* ===== INPUT DROPDOWN ===== */
+.input-dropdown {
+  position:absolute; top:100%; left:0; right:0; background:white;
+  border:1.5px solid var(--navy); border-top:none; border-radius:0 0 8px 8px;
+  box-shadow:var(--shadow-md); z-index:100; max-height:200px; overflow-y:auto;
+  display:none;
+}
+.input-dropdown.show { display:block; }
+.dd-item {
+  padding:9px 14px; font-size:13px; cursor:pointer; color:var(--text);
+  transition:background 0.15s; border-bottom:1px solid var(--border);
+}
+.dd-item:last-child { border-bottom:none; }
+.dd-item:hover { background:var(--surface2); color:var(--navy); font-weight:500; }
+
+/* ===== DISC PICKER ===== */
+.disc-picker {
+  background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:10px; padding:14px;
+}
+.disc-picker-search { position:relative; margin-bottom:12px; }
+.disc-pills-container {
+  display:flex; flex-wrap:wrap; gap:6px; min-height:32px;
+  margin-bottom:12px; padding:8px; background:white;
+  border:1.5px solid var(--border); border-radius:8px;
+}
+.disc-pills-container:empty::before {
+  content:'Selecione as disciplinas abaixo...';
+  color:var(--text3); font-size:12px; align-self:center;
+}
+.disc-pill {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:4px 10px; background:var(--navy); color:white;
+  border-radius:20px; font-size:12px; font-weight:500;
+}
+.disc-pill button {
+  background:none; border:none; color:rgba(255,255,255,0.7);
+  cursor:pointer; font-size:14px; line-height:1; padding:0;
+  display:flex; align-items:center;
+}
+.disc-pill button:hover { color:white; }
+.disc-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:6px; max-height:220px; overflow-y:auto;
+}
+.disc-opt {
+  padding:8px 12px; background:white; border:1.5px solid var(--border);
+  border-radius:8px; font-size:12px; font-weight:500; cursor:pointer;
+  transition:all 0.18s; color:var(--text2); text-align:left;
+}
+.disc-opt:hover { border-color:var(--navy); color:var(--navy); }
+.disc-opt.selected { background:var(--navy); color:white; border-color:var(--navy); }
+
+/* ===== PROVA BLOCO ===== */
+.prova-bloco {
+  background:white; border:1.5px solid var(--border);
+  border-radius:12px; overflow:hidden; box-shadow:var(--shadow);
+}
+.prova-bloco-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; cursor:pointer; transition:background 0.18s;
+}
+.prova-bloco-header:hover { background:var(--surface2); }
+
+/* ===== REVISÃO ===== */
+.rev-section {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:14px;
+}
+.rev-title {
+  font-size:12px; font-weight:700; color:var(--text3);
+  text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;
+  display:flex; align-items:center; gap:6px;
+}
+.rev-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:5px 0; border-bottom:1px solid var(--border); font-size:13px;
+}
+.rev-row:last-child { border-bottom:none; }
+.rev-key { color:var(--text3); font-weight:500; }
+.rev-val { color:var(--navy); font-weight:600; text-align:right; max-width:60%; }
+
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--surface3); }
@@ -967,271 +1101,296 @@ body {
 
 <!-- ===== MODAL NOVO CONCURSO ===== -->
 <div class="modal-overlay" id="modalNovo">
-  <div class="modal">
+  <div class="modal" style="max-width:760px">
     <div class="modal-header">
       <div>
         <div class="modal-title" id="modal-novo-title">Novo Concurso</div>
-        <div class="modal-subtitle">Preencha as informações disponíveis no momento</div>
+        <div class="modal-subtitle" id="modal-novo-step-label">Passo 1 de 4 — Identificação</div>
       </div>
       <button class="modal-close" onclick="closeModal('modalNovo')">✕</button>
     </div>
-    <div class="modal-body">
-      <input type="hidden" id="edit-id">
-      <div class="form-grid">
 
-        <div class="form-section-title">📌 Identificação</div>
-
-        <div class="form-group full">
-          <label class="form-label">Nome do Concurso / Cargo *</label>
-          <input class="form-input" id="f-nome" placeholder="Ex: Analista Jurídico — TRT-MG">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Órgão / Entidade</label>
-          <input class="form-input" id="f-orgao" placeholder="Ex: TRT-MG">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Área / Especialidade</label>
-          <input class="form-input" id="f-area" placeholder="Ex: Jurídica, Fiscal, TI">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Nível</label>
-          <select class="form-select" id="f-nivel">
-            <option value="">Selecione</option>
-            <option>Superior</option><option>Médio</option>
-            <option>Técnico</option><option>Fundamental</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Status</label>
-          <select class="form-select" id="f-status">
-            <option value="previsto">Previsto</option>
-            <option value="edital">Edital Publicado</option>
-            <option value="inscricoes">Inscrições Abertas</option>
-            <option value="encerrado">Encerrado</option>
-          </select>
-        </div>
-
-        <div class="form-section-title">💰 Vagas e Remuneração</div>
-
-        <div class="form-group">
-          <label class="form-label">Vagas</label>
-          <input class="form-input" id="f-vagas" placeholder="Ex: 50 + CR">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Salário / Remuneração</label>
-          <input class="form-input" id="f-salario" placeholder="Ex: R$ 8.500,00">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Taxa de Inscrição</label>
-          <input class="form-input" id="f-taxa" placeholder="Ex: R$ 120,00">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Lotação / Local</label>
-          <input class="form-input" id="f-local" placeholder="Ex: Belo Horizonte - MG">
-        </div>
-
-        <div class="form-section-title">📅 Cronograma</div>
-
-        <div class="form-group">
-          <label class="form-label">Data prevista do Edital</label>
-          <input class="form-input" id="f-data-edital" type="date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Início das Inscrições</label>
-          <input class="form-input" id="f-data-inicio" type="date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Término das Inscrições</label>
-          <input class="form-input" id="f-data-fim" type="date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Data da Prova</label>
-          <input class="form-input" id="f-data-prova" type="date">
-        </div>
-
-        <div class="form-section-title">📄 Edital e Banca</div>
-
-        <div class="form-group full">
-          <label class="form-label">Link do Edital / Página Oficial</label>
-          <input class="form-input" id="f-link" placeholder="https://...">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Banca Organizadora</label>
-          <input class="form-input" id="f-banca" placeholder="Ex: CESPE, FCC, FGV">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Número do Edital</label>
-          <input class="form-input" id="f-num-edital" placeholder="Ex: 01/2025">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Prioridade Pessoal</label>
-          <select class="form-select" id="f-prioridade">
-            <option value="alta">🔴 Alta</option>
-            <option value="media" selected>🟡 Média</option>
-            <option value="baixa">🟢 Baixa</option>
-          </select>
-        </div>
-
-        <!-- ===== PROVAS TABS ===== -->
-        <div class="form-section-title">📝 Estrutura das Provas</div>
-
-        <div class="full" style="grid-column:1/-1">
-          <div class="provas-tabs">
-            <button class="provas-tab active" onclick="switchProvaTab('objetiva',this)">Objetiva</button>
-            <button class="provas-tab" onclick="switchProvaTab('dissertativa',this)">Dissertativa / Redação</button>
-            <button class="provas-tab" onclick="switchProvaTab('oral',this)">Oral / Entrevista</button>
-          </div>
-
-          <!-- OBJETIVA -->
-          <div class="prova-section active" id="psec-objetiva">
-            <div class="toggle-wrap">
-              <div class="toggle on" id="tog-objetiva" onclick="toggleProva('objetiva')"></div>
-              <span class="toggle-label">Possui prova objetiva</span>
-            </div>
-            <div id="objetiva-fields">
-              <div style="margin-bottom:10px">
-                <label class="form-label" style="margin-bottom:6px;display:block">Total de questões objetivas</label>
-                <input class="form-input" id="f-obj-total" type="number" placeholder="Ex: 80" style="max-width:160px">
-              </div>
-              <div style="margin-bottom:10px">
-                <label class="form-label" style="margin-bottom:6px;display:block">Nota mínima de aprovação</label>
-                <input class="form-input" id="f-obj-min" type="number" step="0.01" placeholder="Ex: 60.00" style="max-width:160px">
-              </div>
-              <label class="form-label" style="margin-bottom:8px;display:block">Disciplinas da Prova Objetiva</label>
-              <div class="disciplinas-builder">
-                <div class="disc-header">
-                  <span>Disciplina</span><span style="text-align:center">Questões</span><span style="text-align:center">Peso (%)</span><span></span>
-                </div>
-                <div id="disc-list-objetiva"></div>
-                <div class="disc-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="addDisc('objetiva')">+ Adicionar Disciplina</button>
-                  <div class="disc-total" id="disc-total-objetiva"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- DISSERTATIVA -->
-          <div class="prova-section" id="psec-dissertativa">
-            <div class="toggle-wrap">
-              <div class="toggle" id="tog-dissertativa" onclick="toggleProva('dissertativa')"></div>
-              <span class="toggle-label">Possui prova dissertativa / redação</span>
-            </div>
-            <div id="dissertativa-fields" style="display:none">
-              <div class="form-grid" style="margin-bottom:12px">
-                <div class="form-group">
-                  <label class="form-label">Tipo</label>
-                  <select class="form-select" id="f-diss-tipo">
-                    <option value="dissertativa">Dissertativa</option>
-                    <option value="redacao">Redação</option>
-                    <option value="peça">Peça Prático-Profissional</option>
-                    <option value="sentenca">Sentença/Decisão</option>
-                    <option value="parecer">Parecer</option>
-                    <option value="outro">Outro</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Nota Máxima</label>
-                  <input class="form-input" id="f-diss-max" type="number" step="0.01" placeholder="Ex: 100">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Nota Mínima (aprovação)</label>
-                  <input class="form-input" id="f-diss-min" type="number" step="0.01" placeholder="Ex: 60">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Número de Questões / Peças</label>
-                  <input class="form-input" id="f-diss-qtd" type="number" placeholder="Ex: 2">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Peso na nota final (%)</label>
-                  <input class="form-input" id="f-diss-peso" type="number" step="0.01" placeholder="Ex: 40">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Duração (horas)</label>
-                  <input class="form-input" id="f-diss-dur" type="number" step="0.5" placeholder="Ex: 5">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Observações / Estrutura</label>
-                <textarea class="form-textarea" id="f-diss-obs" placeholder="Descreva a estrutura da prova, critérios de avaliação, etc."></textarea>
-              </div>
-              <label class="form-label" style="margin:12px 0 8px;display:block">Disciplinas da Prova Dissertativa</label>
-              <div class="disciplinas-builder">
-                <div class="disc-header">
-                  <span>Disciplina / Tema</span><span style="text-align:center">Qtd.</span><span style="text-align:center">Peso (%)</span><span></span>
-                </div>
-                <div id="disc-list-dissertativa"></div>
-                <div class="disc-footer">
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="addDisc('dissertativa')">+ Adicionar Disciplina</button>
-                  <div class="disc-total" id="disc-total-dissertativa"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ORAL -->
-          <div class="prova-section" id="psec-oral">
-            <div class="toggle-wrap">
-              <div class="toggle" id="tog-oral" onclick="toggleProva('oral')"></div>
-              <span class="toggle-label">Possui prova oral / entrevista</span>
-            </div>
-            <div id="oral-fields" style="display:none">
-              <div class="form-grid" style="margin-bottom:12px">
-                <div class="form-group">
-                  <label class="form-label">Tipo</label>
-                  <select class="form-select" id="f-oral-tipo">
-                    <option value="oral">Prova Oral</option>
-                    <option value="entrevista">Entrevista</option>
-                    <option value="arguicao">Arguição</option>
-                    <option value="defesa">Defesa de Memorial</option>
-                    <option value="outro">Outro</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Nota Máxima</label>
-                  <input class="form-input" id="f-oral-max" type="number" step="0.01" placeholder="Ex: 100">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Nota Mínima (aprovação)</label>
-                  <input class="form-input" id="f-oral-min" type="number" step="0.01" placeholder="Ex: 60">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Peso na nota final (%)</label>
-                  <input class="form-input" id="f-oral-peso" type="number" step="0.01" placeholder="Ex: 20">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Duração (minutos)</label>
-                  <input class="form-input" id="f-oral-dur" type="number" placeholder="Ex: 30">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Nº de Examinadores</label>
-                  <input class="form-input" id="f-oral-exam" type="number" placeholder="Ex: 3">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Temas / Conteúdo Programático</label>
-                <textarea class="form-textarea" id="f-oral-temas" placeholder="Liste os temas e conteúdos cobrados na prova oral..."></textarea>
-              </div>
-              <div class="form-group" style="margin-top:10px">
-                <label class="form-label">Critérios de Avaliação</label>
-                <textarea class="form-textarea" id="f-oral-criterios" placeholder="Domínio do conteúdo, clareza, postura, argumentação..."></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section-title">📝 Observações Gerais</div>
-        <div class="form-group full">
-          <label class="form-label">Observações</label>
-          <textarea class="form-textarea" id="f-obs" placeholder="Anotações relevantes sobre o concurso..."></textarea>
-        </div>
+    <!-- STEP PROGRESS -->
+    <div style="padding:0 24px;padding-top:16px;border-bottom:1px solid var(--border);background:var(--surface2)">
+      <div style="display:flex;gap:0;margin-bottom:12px">
+        <div class="wizard-step active" id="ws1" onclick="gotoStep(1)"><span>1</span> Identificação</div>
+        <div class="wizard-step" id="ws2" onclick="gotoStep(2)"><span>2</span> Vagas & Datas</div>
+        <div class="wizard-step" id="ws3" onclick="gotoStep(3)"><span>3</span> Provas</div>
+        <div class="wizard-step" id="ws4" onclick="gotoStep(4)"><span>4</span> Revisão</div>
+      </div>
+      <div style="height:3px;background:var(--border);border-radius:2px;margin-bottom:-1px">
+        <div id="wizard-progress" style="height:100%;background:linear-gradient(90deg,var(--navy),var(--gold));border-radius:2px;width:25%;transition:width 0.3s"></div>
       </div>
     </div>
+
+    <input type="hidden" id="edit-id">
+    <div class="modal-body">
+
+      <!-- ===== STEP 1: IDENTIFICAÇÃO ===== -->
+      <div class="wizard-pane active" id="step-pane-1">
+        <div class="form-grid">
+
+          <div class="form-group full">
+            <label class="form-label">Nome do Concurso / Cargo *</label>
+            <input class="form-input" id="f-nome" placeholder="Ex: Analista Jurídico — TRT-MG">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Órgão / Entidade</label>
+            <div style="position:relative">
+              <input class="form-input" id="f-orgao" placeholder="Digite ou selecione..." oninput="filterDropdown('orgao',this.value)" autocomplete="off">
+              <div class="input-dropdown" id="dd-orgao"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Área / Especialidade</label>
+            <select class="form-select" id="f-area">
+              <option value="">Selecione a área</option>
+              <option>Jurídica</option><option>Fiscal / Tributária</option>
+              <option>Administrativa</option><option>Tecnologia da Informação</option>
+              <option>Contábil / Financeira</option><option>Saúde</option>
+              <option>Engenharia</option><option>Educação</option>
+              <option>Segurança Pública</option><option>Outra</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nível</label>
+            <div class="btn-group-select" id="nivel-select">
+              <button type="button" class="bgs-btn active" onclick="selectBGS('nivel-select',this,'Superior')">Superior</button>
+              <button type="button" class="bgs-btn" onclick="selectBGS('nivel-select',this,'Médio')">Médio</button>
+              <button type="button" class="bgs-btn" onclick="selectBGS('nivel-select',this,'Técnico')">Técnico</button>
+              <button type="button" class="bgs-btn" onclick="selectBGS('nivel-select',this,'Fundamental')">Fundamental</button>
+            </div>
+            <input type="hidden" id="f-nivel" value="Superior">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Status Atual</label>
+            <div class="btn-group-select" id="status-select">
+              <button type="button" class="bgs-btn active" onclick="selectBGS('status-select',this,'previsto')">Previsto</button>
+              <button type="button" class="bgs-btn" onclick="selectBGS('status-select',this,'edital')">Edital</button>
+              <button type="button" class="bgs-btn" onclick="selectBGS('status-select',this,'inscricoes')">Inscrições</button>
+              <button type="button" class="bgs-btn" onclick="selectBGS('status-select',this,'encerrado')">Encerrado</button>
+            </div>
+            <input type="hidden" id="f-status" value="previsto">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Banca Organizadora</label>
+            <div style="position:relative">
+              <input class="form-input" id="f-banca" placeholder="Selecione ou digite..." oninput="filterDropdown('banca',this.value)" autocomplete="off">
+              <div class="input-dropdown" id="dd-banca"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Número do Edital</label>
+            <input class="form-input" id="f-num-edital" placeholder="Ex: 01/2025">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Prioridade Pessoal</label>
+            <div class="btn-group-select" id="prio-select">
+              <button type="button" class="bgs-btn" onclick="selectBGS('prio-select',this,'alta')" style="color:var(--rose)">🔴 Alta</button>
+              <button type="button" class="bgs-btn active" onclick="selectBGS('prio-select',this,'media')" style="color:var(--gold)">🟡 Média</button>
+              <button type="button" class="bgs-btn" onclick="selectBGS('prio-select',this,'baixa')" style="color:var(--green)">🟢 Baixa</button>
+            </div>
+            <input type="hidden" id="f-prioridade" value="media">
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">Link do Edital / Página Oficial</label>
+            <input class="form-input" id="f-link" placeholder="https://...">
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">Observações</label>
+            <textarea class="form-textarea" id="f-obs" placeholder="Anotações relevantes sobre o concurso..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== STEP 2: VAGAS & DATAS ===== -->
+      <div class="wizard-pane" id="step-pane-2">
+        <div class="form-grid">
+
+          <div class="form-section-title">💰 Remuneração e Vagas</div>
+
+          <div class="form-group">
+            <label class="form-label">Vagas</label>
+            <input class="form-input" id="f-vagas" placeholder="Ex: 50 + CR">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Salário / Remuneração</label>
+            <input class="form-input" id="f-salario" placeholder="Ex: R$ 8.500,00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Taxa de Inscrição</label>
+            <input class="form-input" id="f-taxa" placeholder="Ex: R$ 120,00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lotação / Local</label>
+            <input class="form-input" id="f-local" placeholder="Ex: Belo Horizonte - MG">
+          </div>
+
+          <div class="form-section-title">📅 Cronograma</div>
+
+          <div class="form-group">
+            <label class="form-label">Publicação do Edital</label>
+            <input class="form-input" id="f-data-edital" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Início das Inscrições</label>
+            <input class="form-input" id="f-data-inicio" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Término das Inscrições</label>
+            <input class="form-input" id="f-data-fim" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data da Prova</label>
+            <input class="form-input" id="f-data-prova" type="date">
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== STEP 3: PROVAS ===== -->
+      <div class="wizard-pane" id="step-pane-3">
+
+        <!-- OBJETIVA -->
+        <div class="prova-bloco">
+          <div class="prova-bloco-header" onclick="toggleProvaBloco('obj')">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="toggle" id="tog-objetiva" onclick="event.stopPropagation();toggleProva('objetiva')"></div>
+              <div>
+                <div style="font-weight:600;color:var(--navy)">📝 Prova Objetiva</div>
+                <div style="font-size:12px;color:var(--text3)">Questões de múltipla escolha</div>
+              </div>
+            </div>
+            <span id="obj-arrow" style="color:var(--text3);font-size:12px">▼</span>
+          </div>
+          <div id="obj-body" style="padding:16px;border-top:1px solid var(--border)">
+            <div class="toggle on" id="tog-objetiva2" style="display:none"></div>
+            <div id="objetiva-fields">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                <div class="form-group"><label class="form-label">Total de Questões</label><input class="form-input" id="f-obj-total" type="number" placeholder="Ex: 80"></div>
+                <div class="form-group"><label class="form-label">Nota Mínima</label><input class="form-input" id="f-obj-min" type="number" step="0.01" placeholder="Ex: 60.00"></div>
+              </div>
+              <label class="form-label" style="display:block;margin-bottom:10px">Disciplinas da Prova Objetiva</label>
+
+              <!-- DISCIPLINAS PICKER -->
+              <div class="disc-picker">
+                <div class="disc-picker-search">
+                  <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px">🔍</span>
+                  <input type="text" id="disc-search" class="form-input" placeholder="Buscar disciplina..." oninput="filterDiscs(this.value)" style="padding-left:32px">
+                </div>
+                <div class="disc-pills-container" id="disc-pills-selected"></div>
+                <div class="disc-grid" id="disc-grid-options"></div>
+                <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+                  <input type="text" id="disc-custom-input" class="form-input" placeholder="Adicionar disciplina personalizada..." style="flex:1">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomDisc()">+ Adicionar</button>
+                </div>
+              </div>
+
+              <div style="margin-top:14px">
+                <label class="form-label" style="display:block;margin-bottom:8px">Distribuição de Questões por Disciplina</label>
+                <div class="disciplinas-builder">
+                  <div class="disc-header"><span>Disciplina</span><span style="text-align:center">Questões</span><span style="text-align:center">Peso%</span><span></span></div>
+                  <div id="disc-list-objetiva"></div>
+                  <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDisc('objetiva')">+ Linha manual</button>
+                    <div class="disc-total" id="disc-total-objetiva"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DISSERTATIVA -->
+        <div class="prova-bloco" style="margin-top:14px">
+          <div class="prova-bloco-header" onclick="toggleProvaBloco('diss')">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="toggle" id="tog-dissertativa" onclick="event.stopPropagation();toggleProva('dissertativa')"></div>
+              <div>
+                <div style="font-weight:600;color:var(--navy)">✍ Prova Dissertativa / Redação</div>
+                <div style="font-size:12px;color:var(--text3)">Peças jurídicas, redações, sentenças</div>
+              </div>
+            </div>
+            <span id="diss-arrow" style="color:var(--text3);font-size:12px">▼</span>
+          </div>
+          <div id="diss-body" style="display:none;padding:16px;border-top:1px solid var(--border)">
+            <div id="dissertativa-fields">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-group"><label class="form-label">Tipo</label>
+                  <select class="form-select" id="f-diss-tipo">
+                    <option value="dissertativa">Dissertativa</option><option value="redacao">Redação</option>
+                    <option value="peça">Peça Jurídica</option><option value="sentenca">Sentença/Decisão</option>
+                    <option value="parecer">Parecer</option><option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">Nº de Questões/Peças</label><input class="form-input" id="f-diss-qtd" type="number" placeholder="Ex: 2"></div>
+                <div class="form-group"><label class="form-label">Nota Máxima</label><input class="form-input" id="f-diss-max" type="number" placeholder="Ex: 100"></div>
+                <div class="form-group"><label class="form-label">Nota Mínima</label><input class="form-input" id="f-diss-min" type="number" placeholder="Ex: 60"></div>
+                <div class="form-group"><label class="form-label">Peso na Nota Final %</label><input class="form-input" id="f-diss-peso" type="number" placeholder="Ex: 40"></div>
+                <div class="form-group"><label class="form-label">Duração (horas)</label><input class="form-input" id="f-diss-dur" type="number" step="0.5" placeholder="Ex: 5"></div>
+              </div>
+              <div class="form-group" style="margin-top:12px"><label class="form-label">Observações / Estrutura</label><textarea class="form-textarea" id="f-diss-obs" placeholder="Critérios de avaliação, estrutura esperada..."></textarea></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ORAL -->
+        <div class="prova-bloco" style="margin-top:14px">
+          <div class="prova-bloco-header" onclick="toggleProvaBloco('oral')">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="toggle" id="tog-oral" onclick="event.stopPropagation();toggleProva('oral')"></div>
+              <div>
+                <div style="font-weight:600;color:var(--navy)">🎙 Prova Oral / Entrevista</div>
+                <div style="font-size:12px;color:var(--text3)">Arguição, defesa de memorial, entrevista</div>
+              </div>
+            </div>
+            <span id="oral-arrow" style="color:var(--text3);font-size:12px">▼</span>
+          </div>
+          <div id="oral-body" style="display:none;padding:16px;border-top:1px solid var(--border)">
+            <div id="oral-fields">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-group"><label class="form-label">Tipo</label>
+                  <select class="form-select" id="f-oral-tipo">
+                    <option value="oral">Prova Oral</option><option value="entrevista">Entrevista</option>
+                    <option value="arguicao">Arguição</option><option value="defesa">Defesa de Memorial</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">Nº de Examinadores</label><input class="form-input" id="f-oral-exam" type="number" placeholder="Ex: 3"></div>
+                <div class="form-group"><label class="form-label">Nota Máxima</label><input class="form-input" id="f-oral-max" type="number" placeholder="Ex: 100"></div>
+                <div class="form-group"><label class="form-label">Nota Mínima</label><input class="form-input" id="f-oral-min" type="number" placeholder="Ex: 60"></div>
+                <div class="form-group"><label class="form-label">Peso %</label><input class="form-input" id="f-oral-peso" type="number" placeholder="Ex: 20"></div>
+                <div class="form-group"><label class="form-label">Duração (minutos)</label><input class="form-input" id="f-oral-dur" type="number" placeholder="Ex: 30"></div>
+              </div>
+              <div class="form-group" style="margin-top:12px"><label class="form-label">Temas / Conteúdo</label><textarea class="form-textarea" id="f-oral-temas" placeholder="Temas cobrados..."></textarea></div>
+              <div class="form-group" style="margin-top:10px"><label class="form-label">Critérios de Avaliação</label><textarea class="form-textarea" id="f-oral-criterios" placeholder="Domínio, argumentação, clareza..."></textarea></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== STEP 4: REVISÃO ===== -->
+      <div class="wizard-pane" id="step-pane-4">
+        <div id="revisao-content" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+
+    </div><!-- end modal-body -->
+
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('modalNovo')">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarConcurso()">💾 Salvar</button>
+      <button class="btn btn-secondary" id="btn-wizard-back" onclick="wizardBack()" style="display:none">← Voltar</button>
+      <button class="btn btn-secondary" onclick="closeModal('modalNovo')" id="btn-wizard-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="btn-wizard-next" onclick="wizardNext()">Próximo →</button>
     </div>
   </div>
+</div></div>
 </div>
 
 <!-- ===== MODAL REALIZADO ===== -->
@@ -1719,9 +1878,10 @@ function loadDiscsReal(discs=[]) {
 // ===== OPEN MODAL NOVO =====
 function openModalNovo(id=null) {
   clearForm();
+  gotoStep(1);
+  initDiscPicker();
   document.getElementById('modal-novo-title').textContent = id ? 'Editar Concurso' : 'Novo Concurso';
   if (id) { const c = concursos.find(x=>x.id===id); if(c) fillForm(c); }
-  else loadDiscs('objetiva'); // default: 1 row
   openModal('modalNovo');
 }
 
@@ -1736,21 +1896,27 @@ function clearForm() {
   document.getElementById('f-status').value='previsto';
   document.getElementById('f-nivel').value='';
   document.getElementById('f-prioridade').value='media';
-  // toggles
-  ['objetiva','dissertativa','oral'].forEach(t => {
-    const tog = document.getElementById('tog-'+t);
-    const fields = document.getElementById(t+'-fields');
-    if (t==='objetiva') { tog.classList.add('on'); if(fields) fields.style.display='block'; }
-    else { tog.classList.remove('on'); if(fields) fields.style.display='none'; }
+  // Reset disc list
+  const dlo = document.getElementById('disc-list-objetiva');
+  if(dlo) dlo.innerHTML = '';
+  const dld = document.getElementById('disc-list-dissertativa');
+  if(dld) dld.innerHTML = '';
+  // Reset toggles
+  const to = document.getElementById('tog-objetiva');
+  if(to) { to.classList.remove('on'); }
+  const td = document.getElementById('tog-dissertativa');
+  if(td) td.classList.remove('on');
+  const tor = document.getElementById('tog-oral');
+  if(tor) tor.classList.remove('on');
+  // Reset prova blocos
+  ['diss','oral'].forEach(t => {
+    const body = document.getElementById(t+'-body');
+    if(body) body.style.display = 'none';
   });
-  loadDiscs('objetiva');
-  document.getElementById('disc-list-dissertativa').innerHTML='';
-  document.getElementById('disc-list-oral') && (document.getElementById('disc-list-oral').innerHTML='');
-  // tabs reset
-  document.querySelectorAll('.provas-tab').forEach((t,i) => t.classList.toggle('active',i===0));
-  document.querySelectorAll('.prova-section').forEach((s,i) => s.classList.toggle('active',i===0));
+  currentStep=1;
+  selectedDiscs=[];
+  allDiscs=[...DISC_CATALOG];
 }
-
 function fillForm(c) {
   document.getElementById('edit-id').value = c.id;
   const fields = ['nome','orgao','area','local','vagas','salario','taxa',
@@ -2497,6 +2663,207 @@ function exportarPDF() {
   ${simulados.length?`<h2>Simulados</h2><table><tr><th>Nome</th><th>Matéria</th><th>Data</th><th>Nota</th><th>Acertos</th></tr>${simulados.map(s=>`<tr><td>${s.nome}</td><td>${s.materia||'—'}</td><td>${fmtDate(s.data)}</td><td>${s.nota||'—'}</td><td>${s.acertos||'—'}/${s.total||'—'}</td></tr>`).join('')}</table>`:''}
   <script>window.print();<\/script></body></html>`);
   win.document.close();
+}
+
+
+
+// ===== DISCIPLINAS CATALOG =====
+const DISC_CATALOG = [
+  'Língua Portuguesa','Raciocínio Lógico','Matemática','Informática Básica',
+  'Direito Constitucional','Direito Administrativo','Direito Civil','Direito Penal',
+  'Direito Processual Civil','Direito Processual Penal','Direito Tributário',
+  'Direito Trabalhista e Previdenciário','Direito Financeiro e Orçamentário',
+  'Direito Eleitoral','Direito Ambiental','Direito Empresarial','Direito Internacional',
+  'Lei de Improbidade Administrativa','Lei Orgânica do MP','Estatuto da OAB',
+  'Administração Pública','Controle Interno e Externo','Licitações e Contratos',
+  'Contabilidade Pública','Auditoria Governamental','Lei de Responsabilidade Fiscal',
+  'Atualidades e Ética Pública','Redação Oficial','Noções de Criminologia',
+  'Legislação Específica do Órgão'
+];
+
+const BANCAS_LIST = [
+  'CESPE / CEBRASPE','FCC — Fundação Carlos Chagas','FGV — Fundação Getulio Vargas',
+  'VUNESP','IBFC','IADES','AOCP','QUADRIX','FUNRIO','CONSULPLAN',
+  'FEPESE','OBJETIVA','IDECAN','IBAM','MSS Concursos','UNOESC','AVANÇA SP',
+  'COVEST-COPSET','COMPERVE','FADESP'
+];
+
+const ORGAOS_LIST = [
+  'AGU — Advocacia-Geral da União','DPU — Defensoria Pública da União',
+  'MPU — Ministério Público da União','TCU — Tribunal de Contas da União',
+  'TRF — Tribunal Regional Federal','TRT — Tribunal Regional do Trabalho',
+  'STJ — Superior Tribunal de Justiça','STF — Supremo Tribunal Federal',
+  'PGR — Procuradoria-Geral da República','PGFN — Procuradoria-Geral da Fazenda Nacional',
+  'Receita Federal do Brasil','Polícia Federal','Polícia Rodoviária Federal',
+  'TJMG — Tribunal de Justiça de MG','MPMG — Ministério Público de MG',
+  'TCE-MG','ALMG','Governo do Estado de MG','Prefeitura de BH',
+  'Câmara Municipal de BH','PROCON','DETRAN','INSS','Caixa Econômica Federal',
+  'Banco do Brasil','BNDES','Petrobrás'
+];
+
+let selectedDiscs = [];
+let allDiscs = [...DISC_CATALOG];
+
+function initDiscPicker() {
+  selectedDiscs = [];
+  renderDiscPills();
+  renderDiscGrid('');
+}
+
+function filterDiscs(val) { renderDiscGrid(val); }
+
+function renderDiscGrid(filter) {
+  const grid = document.getElementById('disc-grid-options');
+  if (!grid) return;
+  const f = filter.toLowerCase();
+  const filtered = allDiscs.filter(d => !f || d.toLowerCase().includes(f));
+  grid.innerHTML = filtered.map(d => `
+    <button type="button" class="disc-opt ${selectedDiscs.includes(d)?'selected':''}" onclick="toggleDisc('${d.replace(/'/g,"\'")}')">
+      ${selectedDiscs.includes(d)?'✓ ':''}${d}
+    </button>`).join('');
+}
+
+function toggleDisc(disc) {
+  if (selectedDiscs.includes(disc)) {
+    selectedDiscs = selectedDiscs.filter(d => d !== disc);
+  } else {
+    selectedDiscs.push(disc);
+    // Auto-add to disc list if not already there
+    const list = document.getElementById('disc-list-objetiva');
+    const existing = Array.from(list.querySelectorAll('.disciplina-input')).map(i => i.value.trim());
+    if (!existing.includes(disc)) addDisc('objetiva', disc, '', '');
+  }
+  renderDiscPills();
+  renderDiscGrid(document.getElementById('disc-search')?.value || '');
+}
+
+function renderDiscPills() {
+  const cont = document.getElementById('disc-pills-selected');
+  if (!cont) return;
+  cont.innerHTML = selectedDiscs.map(d => `
+    <div class="disc-pill">
+      <span>${d}</span>
+      <button onclick="toggleDisc('${d.replace(/'/g,"\'")}')">×</button>
+    </div>`).join('');
+}
+
+function addCustomDisc() {
+  const inp = document.getElementById('disc-custom-input');
+  const val = inp.value.trim(); if (!val) return;
+  if (!allDiscs.includes(val)) allDiscs.push(val);
+  if (!selectedDiscs.includes(val)) {
+    selectedDiscs.push(val);
+    addDisc('objetiva', val, '', '');
+  }
+  inp.value = '';
+  renderDiscPills();
+  renderDiscGrid(document.getElementById('disc-search')?.value || '');
+}
+
+// ===== DROPDOWN HELPERS =====
+function filterDropdown(type, val) {
+  const list = type === 'banca' ? BANCAS_LIST : ORGAOS_LIST;
+  const dd = document.getElementById('dd-'+type);
+  if (!val) { dd.classList.remove('show'); return; }
+  const filtered = list.filter(i => i.toLowerCase().includes(val.toLowerCase())).slice(0, 8);
+  if (!filtered.length) { dd.classList.remove('show'); return; }
+  dd.innerHTML = filtered.map(i => `<div class="dd-item" onclick="selectDD('${type}','${i.replace(/'/g,"\'")}')">` + i + '</div>').join('');
+  dd.classList.add('show');
+}
+
+function selectDD(type, val) {
+  document.getElementById('f-'+type).value = val;
+  document.getElementById('dd-'+type).classList.remove('show');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#f-banca') && !e.target.closest('#dd-banca')) document.getElementById('dd-banca')?.classList.remove('show');
+  if (!e.target.closest('#f-orgao') && !e.target.closest('#dd-orgao')) document.getElementById('dd-orgao')?.classList.remove('show');
+});
+
+// ===== BTN GROUP SELECT =====
+function selectBGS(groupId, btn, val) {
+  document.querySelectorAll('#' + groupId + ' .bgs-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const hiddenId = groupId === 'nivel-select' ? 'f-nivel' : groupId === 'status-select' ? 'f-status' : groupId === 'prio-select' ? 'f-prioridade' : null;
+  if (hiddenId) document.getElementById(hiddenId).value = val;
+}
+
+// ===== PROVA BLOCO TOGGLE =====
+function toggleProvaBloco(type) {
+  const body = document.getElementById(type + '-body');
+  const arrow = document.getElementById(type + '-arrow');
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.textContent = isOpen ? '▼' : '▲';
+}
+
+// ===== WIZARD NAVIGATION =====
+let currentStep = 1;
+const TOTAL_STEPS = 4;
+
+function gotoStep(n) {
+  if (n < 1 || n > TOTAL_STEPS) return;
+  // Save current step data
+  currentStep = n;
+  document.querySelectorAll('.wizard-pane').forEach((p,i) => p.classList.toggle('active', i+1 === n));
+  document.querySelectorAll('.wizard-step').forEach((s,i) => {
+    s.classList.toggle('active', i+1 === n);
+    s.classList.toggle('done', i+1 < n);
+  });
+  document.getElementById('wizard-progress').style.width = (n/TOTAL_STEPS*100)+'%';
+  const labels = ['Passo 1 de 4 — Identificação','Passo 2 de 4 — Vagas & Datas','Passo 3 de 4 — Provas','Passo 4 de 4 — Revisão'];
+  document.getElementById('modal-novo-step-label').textContent = labels[n-1];
+  document.getElementById('btn-wizard-back').style.display = n > 1 ? 'inline-flex' : 'none';
+  document.getElementById('btn-wizard-next').textContent = n === TOTAL_STEPS ? '💾 Salvar Concurso' : 'Próximo →';
+  if (n === TOTAL_STEPS) buildRevisao();
+  // Scroll modal to top
+  document.querySelector('#modalNovo .modal').scrollTop = 0;
+}
+
+function wizardNext() {
+  if (currentStep === 1) {
+    if (!v('f-nome').trim()) { showToast('⚠️ Informe o nome do concurso', 'error'); return; }
+  }
+  if (currentStep === TOTAL_STEPS) { salvarConcurso(); return; }
+  gotoStep(currentStep + 1);
+}
+function wizardBack() { gotoStep(currentStep - 1); }
+
+function buildRevisao() {
+  const nome = v('f-nome'), orgao = v('f-orgao'), area = v('f-area'), nivel = v('f-nivel');
+  const status = v('f-status'), banca = v('f-banca'), vagas = v('f-vagas'), salario = v('f-salario');
+  const dataProva = v('f-data-prova'), dataInicio = v('f-data-inicio'), dataFim = v('f-data-fim');
+  const discs = getDiscs('objetiva');
+  const SL2 = {previsto:'Previsto',edital:'Edital Publicado',inscricoes:'Inscrições Abertas',encerrado:'Encerrado'};
+  document.getElementById('revisao-content').innerHTML = `
+    <div class="rev-section">
+      <div class="rev-title">📌 Identificação</div>
+      ${nome?`<div class="rev-row"><span class="rev-key">Concurso</span><span class="rev-val">${nome}</span></div>`:''}
+      ${orgao?`<div class="rev-row"><span class="rev-key">Órgão</span><span class="rev-val">${orgao}</span></div>`:''}
+      ${area?`<div class="rev-row"><span class="rev-key">Área</span><span class="rev-val">${area}</span></div>`:''}
+      <div class="rev-row"><span class="rev-key">Nível</span><span class="rev-val">${nivel}</span></div>
+      <div class="rev-row"><span class="rev-key">Status</span><span class="rev-val">${SL2[status]||status}</span></div>
+      ${banca?`<div class="rev-row"><span class="rev-key">Banca</span><span class="rev-val">${banca}</span></div>`:''}
+    </div>
+    ${vagas||salario?`<div class="rev-section">
+      <div class="rev-title">💰 Vagas & Remuneração</div>
+      ${vagas?`<div class="rev-row"><span class="rev-key">Vagas</span><span class="rev-val">${vagas}</span></div>`:''}
+      ${salario?`<div class="rev-row"><span class="rev-key">Salário</span><span class="rev-val">${salario}</span></div>`:''}
+    </div>`:''}
+    ${dataProva||dataInicio||dataFim?`<div class="rev-section">
+      <div class="rev-title">📅 Datas</div>
+      ${dataInicio?`<div class="rev-row"><span class="rev-key">Início Inscrições</span><span class="rev-val">${fmtDate(dataInicio)}</span></div>`:''}
+      ${dataFim?`<div class="rev-row"><span class="rev-key">Término Inscrições</span><span class="rev-val">${fmtDate(dataFim)}</span></div>`:''}
+      ${dataProva?`<div class="rev-row"><span class="rev-key">Data da Prova</span><span class="rev-val">${fmtDate(dataProva)}</span></div>`:''}
+    </div>`:''}
+    ${discs.length?`<div class="rev-section">
+      <div class="rev-title">📝 Disciplinas (${discs.length})</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px">
+        ${discs.map(d=>`<span class="tag" style="background:var(--navy);color:white;border-color:var(--navy)">${d.nome}</span>`).join('')}
+      </div>
+    </div>`:''}
+  `;
 }
 
 // ===== TOAST =====
