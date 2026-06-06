@@ -977,7 +977,7 @@ body {
         ✅ <span class="tab-label">Realizados</span>
       </button>
       <button class="nav-tab" data-page="estudos" onclick="switchPage('estudos',this)">
-        📚 <span class="tab-label">Estudos</span>
+        📚 <span class="tab-label">Controle</span>
       </button>
     </nav>
 
@@ -3053,9 +3053,18 @@ function updateEstudoConcursoSelect() {
   if (!sel) return;
   const current = sel.value;
   sel.innerHTML = '<option value="">Selecione um concurso...</option>';
+  if (!concursos.length) return;
   concursos.forEach(c => {
-    sel.innerHTML += `<option value="${c.id}" ${c.id===current?'selected':''}>${c.nome}</option>`;
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.nome;
+    if (c.id === current) opt.selected = true;
+    sel.appendChild(opt);
   });
+  // If had selection and concurso still exists, re-render
+  if (current && concursos.find(x => x.id === current)) {
+    renderControlEstudos();
+  }
 }
 
 function renderControlEstudos() {
