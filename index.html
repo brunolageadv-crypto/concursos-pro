@@ -1346,7 +1346,7 @@ body {
         <div class="prova-bloco">
           <div class="prova-bloco-header" onclick="toggleProvaBloco('obj')">
             <div style="display:flex;align-items:center;gap:10px">
-              <div class="toggle" id="tog-objetiva" onclick="event.stopPropagation();toggleProva('objetiva')"></div>
+              <div class="toggle on" id="tog-objetiva" onclick="event.stopPropagation();toggleProva('objetiva')"></div>
               <div>
                 <div style="font-weight:600;color:var(--navy)">📝 Prova Objetiva</div>
                 <div style="font-size:12px;color:var(--text3)">Questões de múltipla escolha</div>
@@ -2103,8 +2103,10 @@ function salvarConcurso() {
     dataFim:v('f-data-fim'), dataProva:v('f-data-prova'),
     link:v('f-link'), banca:v('f-banca'), numEdital:v('f-num-edital'),
     obs:v('f-obs'), status:v('f-status'), nivel:v('f-nivel'), prioridade:v('f-prioridade'),
-    hasObjetiva, objTotal:v('f-obj-total'), objMin:v('f-obj-min'),
-    discObjetiva: hasObjetiva ? getDiscs('objetiva') : [],
+    hasObjetiva,
+    objTotal:v('f-obj-total'), objMin:v('f-obj-min'),
+    objTipo:v('f-obj-tipo'), estrutura:v('f-estrutura'),
+    discObjetiva: getDiscs('objetiva'),
     hasDissertativa,
     dissTipo:v('f-diss-tipo'), dissMax:v('f-diss-max'), dissMin:v('f-diss-min'),
     dissQtd:v('f-diss-qtd'), dissPeso:v('f-diss-peso'), dissDur:v('f-diss-dur'), dissObs:v('f-diss-obs'),
@@ -3082,13 +3084,21 @@ function renderControlEstudos() {
   }
   const c = concursos.find(x => x.id === cid);
   if (!c) return;
-  // Get discs from objetiva, grupos, or any available source
-  let discs = c.discObjetiva || [];
-  // Also add discs from grupos if any
+  // Get discs from all possible sources
+  let discs = [];
+  // From objetiva
+  if (c.discObjetiva && c.discObjetiva.length) {
+    discs = c.discObjetiva.map(d => typeof d === 'string' ? {nome: d, qtd: 0} : d);
+  }
+  // From grupos
   if (c.grupos && c.grupos.length) {
     c.grupos.forEach(g => {
       if (g.discs) g.discs.forEach(d => { if (!discs.find(x => x.nome === d)) discs.push({nome: d, qtd: 0}); });
     });
+  }
+  // From discDissertativa
+  if (!discs.length && c.discDissertativa && c.discDissertativa.length) {
+    discs = c.discDissertativa.map(d => typeof d === 'string' ? {nome: d, qtd: 0} : d);
   }
   if (!discs.length) {
     cont.innerHTML = `<div style="text-align:center;padding:40px 24px;color:var(--text3)">
