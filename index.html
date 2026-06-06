@@ -3053,10 +3053,7 @@ function updateEstudoConcursoSelect() {
   if (!sel) return;
   const current = sel.value;
   sel.innerHTML = '<option value="">Selecione um concurso...</option>';
-  concursos.filter(c => {
-    const discs = c.discObjetiva || [];
-    return discs.length > 0;
-  }).forEach(c => {
+  concursos.forEach(c => {
     sel.innerHTML += `<option value="${c.id}" ${c.id===current?'selected':''}>${c.nome}</option>`;
   });
 }
@@ -3076,7 +3073,23 @@ function renderControlEstudos() {
   }
   const c = concursos.find(x => x.id === cid);
   if (!c) return;
-  const discs = c.discObjetiva || [];
+  // Get discs from objetiva, grupos, or any available source
+  let discs = c.discObjetiva || [];
+  // Also add discs from grupos if any
+  if (c.grupos && c.grupos.length) {
+    c.grupos.forEach(g => {
+      if (g.discs) g.discs.forEach(d => { if (!discs.find(x => x.nome === d)) discs.push({nome: d, qtd: 0}); });
+    });
+  }
+  if (!discs.length) {
+    cont.innerHTML = `<div style="text-align:center;padding:40px 24px;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:12px;opacity:0.4">📝</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:16px;color:var(--text2);margin-bottom:8px">Nenhuma disciplina cadastrada</h3>
+      <p style="font-size:13px;max-width:280px;margin:0 auto 16px">Edite o concurso e adicione disciplinas no Passo 3 — Provas.</p>
+      <button class="btn btn-primary btn-sm" onclick="openModalNovo('${cid}');closeModal&&closeModal()">✏️ Editar Concurso</button>
+    </div>`;
+    return;
+  }
   const key = 'estudo_' + cid;
   const progresso = JSON.parse(localStorage.getItem(key) || '{}');
   const vals = discs.map(d => progresso[d.nome] || 0);
