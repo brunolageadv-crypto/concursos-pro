@@ -1316,9 +1316,10 @@ body {
         <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--navy)">📚 Controle de Estudos por Concurso</div>
         <div style="font-size:13px;color:var(--text3);margin-top:2px">Acompanhe o percentual estudado em cada disciplina</div>
       </div>
-      <select class="form-select" id="est-concurso-select" onchange="renderControlEstudos()" style="max-width:300px">
+      <select class="form-select" id="est-concurso-select" onchange="renderControlEstudos()" style="max-width:300px" onfocus="updateEstudoConcursoSelect()">
         <option value="">Selecione um concurso...</option>
       </select>
+      <button class="btn btn-secondary btn-sm" onclick="forcePopulateSelects()" title="Atualizar lista">🔄</button>
     </div>
     <div id="controle-estudos-container">
       <div style="text-align:center;padding:60px 24px;color:var(--text3)">
@@ -3252,11 +3253,18 @@ function getGrupos() {
 
 // ===== CONTROLE DE ESTUDOS =====
 function updateEstudoConcursoSelect() {
+  // Always re-read from localStorage to ensure latest data
+  const stored = localStorage.getItem('cp_c');
+  if (stored) {
+    try {
+      const data = JSON.parse(stored);
+      if (data.length >= concursos.length) concursos = data;
+    } catch(e) {}
+  }
   const sel = document.getElementById('est-concurso-select');
   if (!sel) return;
   const current = sel.value;
   sel.innerHTML = '<option value="">Selecione um concurso...</option>';
-  if (!concursos.length) return;
   concursos.forEach(c => {
     const opt = document.createElement('option');
     opt.value = c.id;
@@ -3264,10 +3272,7 @@ function updateEstudoConcursoSelect() {
     if (c.id === current) opt.selected = true;
     sel.appendChild(opt);
   });
-  // If had selection and concurso still exists, re-render
-  if (current && concursos.find(x => x.id === current)) {
-    renderControlEstudos();
-  }
+  if (current && concursos.find(x => x.id === current)) renderControlEstudos();
 }
 
 function renderControlEstudos() {
@@ -3520,6 +3525,13 @@ function parseSalario(s) {
 }
 
 function updateSimilaridadeSelect() {
+  const stored = localStorage.getItem('cp_c');
+  if (stored) {
+    try {
+      const data = JSON.parse(stored);
+      if (data.length >= concursos.length) concursos = data;
+    } catch(e) {}
+  }
   const sel = document.getElementById('sim-base-select');
   if (!sel) return;
   const current = sel.value;
@@ -3689,6 +3701,23 @@ function renderSimilaridade() {
   `;
 }
 
+
+
+function forcePopulateSelects() {
+  // Force re-read from localStorage
+  const stored = localStorage.getItem('cp_c');
+  if (stored) {
+    try {
+      const data = JSON.parse(stored);
+      if (data.length > concursos.length) {
+        concursos = data;
+      }
+    } catch(e) {}
+  }
+  updateEstudoConcursoSelect();
+  updateSimilaridadeSelect();
+  showToast('✅ Lista atualizada! ' + concursos.length + ' concursos', 'success');
+}
 
 // ===== DEBUG ESTUDOS =====
 function debugEstudos() {
