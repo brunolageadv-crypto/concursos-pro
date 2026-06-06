@@ -931,6 +931,179 @@ body {
 .countdown-event { font-size:13px; font-weight:600; color:var(--navy); margin-top:6px; }
 .countdown-concurso { font-size:11px; color:var(--text3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
+
+/* ===== SIMILARIDADE ===== */
+.sim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+.sim-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: all 0.25s;
+  position: relative;
+}
+.sim-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+}
+.sim-card-accent {
+  height: 5px;
+}
+.sim-score-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.sim-score-ring {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+.sim-score-ring svg { transform: rotate(-90deg); }
+.sim-score-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.sim-score-pct {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+.sim-score-label {
+  font-size: 9px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  margin-top: 2px;
+}
+.sim-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.3;
+}
+.sim-card-org {
+  font-size: 11px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  margin-top: 3px;
+}
+.sim-body { padding: 16px 20px; }
+.sim-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.sim-disc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+.sim-disc-tag {
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.sim-disc-tag.match {
+  background: var(--green-bg);
+  color: var(--green);
+  border: 1px solid rgba(26,122,74,0.25);
+}
+.sim-disc-tag.nomatch {
+  background: var(--surface3);
+  color: var(--text3);
+  border: 1px solid var(--border);
+}
+.sim-compare-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  gap: 10px;
+}
+.sim-compare-row:last-child { border-bottom: none; }
+.sim-compare-key {
+  color: var(--text3);
+  font-weight: 500;
+  font-size: 12px;
+  min-width: 100px;
+}
+.sim-compare-vals {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.sim-val {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+.sim-val.same {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.sim-val.diff {
+  background: var(--surface3);
+  color: var(--text2);
+}
+.sim-badge-high {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.sim-overall-bar {
+  height: 6px;
+  background: var(--surface3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.sim-overall-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+
 /* SCROLLBAR */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--surface3); }
@@ -978,6 +1151,9 @@ body {
       </button>
       <button class="nav-tab" data-page="estudos" onclick="switchPage('estudos',this)">
         📚 <span class="tab-label">Controle</span>
+      </button>
+      <button class="nav-tab" data-page="similaridade" onclick="switchPage('similaridade',this)">
+        🔀 <span class="tab-label">Similaridade</span>
       </button>
     </nav>
 
@@ -1162,6 +1338,29 @@ body {
       <div style="font-size:40px;margin-bottom:12px;opacity:0.4">🎓</div>
       <h3 style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text2);margin-bottom:8px">Nenhum simulado</h3>
       <p style="font-size:13px;max-width:280px;margin:0 auto 16px">Registre seus simulados para acompanhar a evolução.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SIMILARIDADE ===== -->
+<section class="page" id="page-similaridade">
+  <div class="section-header">
+    <div>
+      <h1 class="section-title">Análise de <em>Similaridade</em></h1>
+      <p class="section-subtitle">Compare disciplinas, datas, bancas e remuneração entre os concursos cadastrados</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <select class="form-select" id="sim-base-select" onchange="renderSimilaridade()" style="max-width:280px">
+        <option value="">Selecione o concurso base...</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="similaridade-container">
+    <div style="text-align:center;padding:80px 24px;color:var(--text3)">
+      <div style="font-size:52px;margin-bottom:16px;opacity:0.35">🔀</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--text2);margin-bottom:8px">Selecione um concurso base</h3>
+      <p style="font-size:14px;max-width:340px;margin:0 auto">Escolha um concurso acima e veja a análise comparativa com todos os outros cadastrados.</p>
     </div>
   </div>
 </section>
@@ -2107,6 +2306,7 @@ function salvarConcurso() {
     objTotal:v('f-obj-total'), objMin:v('f-obj-min'),
     objTipo:v('f-obj-tipo'), estrutura:v('f-estrutura'),
     discObjetiva: getDiscs('objetiva'),
+    grupos: getGrupos(),
     hasDissertativa,
     dissTipo:v('f-diss-tipo'), dissMax:v('f-diss-max'), dissMin:v('f-diss-min'),
     dissQtd:v('f-diss-qtd'), dissPeso:v('f-diss-peso'), dissDur:v('f-diss-dur'), dissObs:v('f-diss-obs'),
@@ -3086,19 +3286,34 @@ function renderControlEstudos() {
   if (!c) return;
   // Get discs from all possible sources
   let discs = [];
-  // From objetiva
+  // From discObjetiva (disciplinas individuais)
   if (c.discObjetiva && c.discObjetiva.length) {
-    discs = c.discObjetiva.map(d => typeof d === 'string' ? {nome: d, qtd: 0} : d);
+    c.discObjetiva.forEach(d => {
+      const nome = typeof d === 'string' ? d : d.nome;
+      if (nome && !discs.find(x => x.nome === nome)) discs.push({nome, qtd: d.qtd||0});
+    });
   }
-  // From grupos
+  // From grupos — extrai TODAS as disciplinas de todos os grupos
   if (c.grupos && c.grupos.length) {
     c.grupos.forEach(g => {
-      if (g.discs) g.discs.forEach(d => { if (!discs.find(x => x.nome === d)) discs.push({nome: d, qtd: 0}); });
+      // Add the group itself as a discipline entry
+      if (g.nome && !discs.find(x => x.nome === g.nome)) {
+        discs.push({nome: g.nome, qtd: g.qtd||0, isGrupo: true});
+      }
+      // Add individual disciplines within the group
+      if (g.discs && g.discs.length) {
+        g.discs.forEach(d => {
+          if (d && !discs.find(x => x.nome === d)) discs.push({nome: d, qtd: 0});
+        });
+      }
     });
   }
   // From discDissertativa
   if (!discs.length && c.discDissertativa && c.discDissertativa.length) {
-    discs = c.discDissertativa.map(d => typeof d === 'string' ? {nome: d, qtd: 0} : d);
+    c.discDissertativa.forEach(d => {
+      const nome = typeof d === 'string' ? d : d.nome;
+      if (nome && !discs.find(x => x.nome === nome)) discs.push({nome, qtd: 0});
+    });
   }
   if (!discs.length) {
     cont.innerHTML = `<div style="text-align:center;padding:40px 24px;color:var(--text3)">
@@ -3260,6 +3475,217 @@ function abrirEdital(concursoId) {
   if (!stored) { showToast('Nenhum edital anexado', 'info'); return; }
   const { data, nome } = JSON.parse(stored);
   const a = document.createElement('a'); a.href = data; a.download = nome; a.click();
+}
+
+
+// ===== SIMILARIDADE =====
+function getConcursoDiscs(c) {
+  const discs = new Set();
+  if (c.discObjetiva) c.discObjetiva.forEach(d => { const n = typeof d === 'string' ? d : d.nome; if(n) discs.add(n.trim().toLowerCase()); });
+  if (c.grupos) c.grupos.forEach(g => {
+    if (g.nome) discs.add(g.nome.trim().toLowerCase());
+    if (g.discs) g.discs.forEach(d => { if(d) discs.add(d.trim().toLowerCase()); });
+  });
+  if (c.discDissertativa) c.discDissertativa.forEach(d => { const n = typeof d === 'string' ? d : d.nome; if(n) discs.add(n.trim().toLowerCase()); });
+  return discs;
+}
+
+function getConcursoDiscsDisplay(c) {
+  const discs = [];
+  if (c.discObjetiva) c.discObjetiva.forEach(d => { const n = typeof d === 'string' ? d : d.nome; if(n && !discs.find(x=>x.toLowerCase()===n.toLowerCase())) discs.push(n); });
+  if (c.grupos) c.grupos.forEach(g => {
+    if (g.nome && !discs.find(x=>x.toLowerCase()===g.nome.toLowerCase())) discs.push(g.nome);
+    if (g.discs) g.discs.forEach(d => { if(d && !discs.find(x=>x.toLowerCase()===d.toLowerCase())) discs.push(d); });
+  });
+  return discs;
+}
+
+function calcSimilarity(a, b) {
+  const discsA = getConcursoDiscs(a);
+  const discsB = getConcursoDiscs(b);
+  if (!discsA.size || !discsB.size) return { pct: 0, common: [], onlyA: [], onlyB: [] };
+  const common = [...discsA].filter(d => discsB.has(d));
+  const onlyA = [...discsA].filter(d => !discsB.has(d));
+  const onlyB = [...discsB].filter(d => !discsA.has(d));
+  const union = new Set([...discsA, ...discsB]);
+  const pct = Math.round((common.length / union.size) * 100);
+  return { pct, common, onlyA, onlyB };
+}
+
+function parseSalario(s) {
+  if (!s) return null;
+  const m = s.replace(/\./g,'').replace(',','.').match(/[\d.]+/);
+  return m ? parseFloat(m[0]) : null;
+}
+
+function updateSimilaridadeSelect() {
+  const sel = document.getElementById('sim-base-select');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Selecione o concurso base...</option>';
+  concursos.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.nome;
+    if (c.id === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  if (current && concursos.find(x => x.id === current)) renderSimilaridade();
+}
+
+function renderSimilaridade() {
+  const sel = document.getElementById('sim-base-select');
+  const cont = document.getElementById('similaridade-container');
+  if (!sel || !cont) return;
+  const baseId = sel.value;
+  if (!baseId) {
+    cont.innerHTML = `<div style="text-align:center;padding:80px 24px;color:var(--text3)">
+      <div style="font-size:52px;margin-bottom:16px;opacity:0.35">🔀</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:20px;color:var(--text2);margin-bottom:8px">Selecione um concurso base</h3>
+      <p style="font-size:14px;max-width:340px;margin:0 auto">Escolha um concurso acima e veja a análise comparativa com todos os outros cadastrados.</p>
+    </div>`;
+    return;
+  }
+  const base = concursos.find(x => x.id === baseId);
+  if (!base) return;
+  const others = concursos.filter(x => x.id !== baseId);
+  if (!others.length) {
+    cont.innerHTML = `<div style="text-align:center;padding:60px 24px;color:var(--text3)">
+      <div style="font-size:40px;margin-bottom:14px;opacity:0.4">📋</div>
+      <h3 style="font-family:'Playfair Display',serif;font-size:18px;color:var(--text2);margin-bottom:8px">Apenas um concurso cadastrado</h3>
+      <p style="font-size:13px;max-width:300px;margin:0 auto">Cadastre mais concursos para comparar a similaridade.</p>
+    </div>`;
+    return;
+  }
+
+  // Calculate similarities and sort by score desc
+  const comparisons = others.map(c => {
+    const sim = calcSimilarity(base, c);
+    return { c, sim };
+  }).sort((a, b) => b.sim.pct - a.sim.pct);
+
+  const baseDiscs = getConcursoDiscsDisplay(base);
+  const baseSal = parseSalario(base.salario);
+
+  // Summary header
+  const avgSim = comparisons.length ? Math.round(comparisons.reduce((a,b) => a + b.sim.pct, 0) / comparisons.length) : 0;
+  const highSim = comparisons.filter(x => x.sim.pct >= 70).length;
+  const medSim = comparisons.filter(x => x.sim.pct >= 40 && x.sim.pct < 70).length;
+
+  cont.innerHTML = `
+    <!-- SUMMARY BAR -->
+    <div style="background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;color:white;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:4px">${base.nome}</div>
+        <div style="font-size:12px;opacity:0.7">${base.orgao||''} · ${baseDiscs.length} disciplinas cadastradas</div>
+      </div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold-light)">${avgSim}%</div><div style="font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:0.07em">Similaridade Média</div></div>
+        <div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#6fcf97">${highSim}</div><div style="font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:0.07em">Alta Similaridade</div></div>
+        <div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:#7eb8f7">${comparisons.length}</div><div style="font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:0.07em">Concursos Comparados</div></div>
+      </div>
+    </div>
+
+    <!-- CARDS -->
+    <div class="sim-grid">
+      ${comparisons.map(({c, sim}) => {
+        const pct = sim.pct;
+        const ringColor = pct >= 70 ? 'var(--green)' : pct >= 40 ? 'var(--gold)' : 'var(--rose)';
+        const accentColor = pct >= 70 ? 'linear-gradient(90deg,var(--green),#2aa05c)' : pct >= 40 ? 'linear-gradient(90deg,var(--gold),var(--gold-light))' : 'linear-gradient(90deg,var(--rose),#e05040)';
+        const strokePct = (pct/100) * 2 * Math.PI * 30;
+        const cSal = parseSalario(c.salario);
+        const sameBanca = base.banca && c.banca && base.banca.toLowerCase() === c.banca.toLowerCase();
+        const sameData = base.dataProva && c.dataProva && base.dataProva === c.dataProva;
+        const nearData = base.dataProva && c.dataProva && Math.abs(new Date(base.dataProva) - new Date(c.dataProva)) < 30*864e5;
+        const cDiscsDisplay = getConcursoDiscsDisplay(c);
+        const commonDiscsDisplay = cDiscsDisplay.filter(d => sim.common.includes(d.toLowerCase()));
+        const diffDiscsDisplay = cDiscsDisplay.filter(d => !sim.common.includes(d.toLowerCase()));
+
+        return `<div class="sim-card">
+          <div class="sim-card-accent" style="background:${accentColor}"></div>
+          ${pct >= 70 ? '<div class="sim-badge-high">⭐ Alta Similaridade</div>' : ''}
+          <div class="sim-score-wrap">
+            <div class="sim-score-ring">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="30" fill="none" stroke="var(--surface3)" stroke-width="8"/>
+                <circle cx="40" cy="40" r="30" fill="none" stroke="${ringColor}" stroke-width="8"
+                  stroke-dasharray="${strokePct.toFixed(1)} 999" stroke-linecap="round"/>
+              </svg>
+              <div class="sim-score-text">
+                <div class="sim-score-pct" style="color:${ringColor}">${pct}%</div>
+                <div class="sim-score-label">Similar</div>
+              </div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div class="sim-card-title">${c.nome}</div>
+              <div class="sim-card-org">${c.orgao||'—'}</div>
+              <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:5px">
+                ${sameBanca ? '<span style="padding:2px 8px;background:var(--teal-bg);color:var(--teal);border-radius:10px;font-size:11px;font-weight:600;border:1px solid rgba(13,139,131,0.2)">✓ Mesma banca</span>' : ''}
+                ${sameData ? '<span style="padding:2px 8px;background:var(--rose-bg);color:var(--rose);border-radius:10px;font-size:11px;font-weight:600;border:1px solid rgba(192,57,43,0.2)">⚠️ Mesma data</span>' : ''}
+                ${nearData && !sameData ? '<span style="padding:2px 8px;background:var(--gold-bg);color:var(--gold);border-radius:10px;font-size:11px;font-weight:600;border:1px solid var(--gold-border)">📅 Datas próximas</span>' : ''}
+              </div>
+            </div>
+          </div>
+
+          <div class="sim-body">
+            <!-- COMPARATIVO -->
+            <div class="sim-section-title" style="margin-bottom:10px">📊 Comparativo</div>
+            <div style="margin-bottom:14px">
+              <div class="sim-compare-row">
+                <span class="sim-compare-key">Banca</span>
+                <div class="sim-compare-vals">
+                  <span class="sim-val ${sameBanca?'same':'diff'}">${base.banca||'—'}</span>
+                  <span style="color:var(--text3);font-size:11px">vs</span>
+                  <span class="sim-val ${sameBanca?'same':'diff'}">${c.banca||'—'}</span>
+                </div>
+              </div>
+              <div class="sim-compare-row">
+                <span class="sim-compare-key">Data Prova</span>
+                <div class="sim-compare-vals">
+                  <span class="sim-val ${sameData?'same':nearData?'':'diff'}" style="${nearData&&!sameData?'background:var(--gold-bg);color:var(--gold)':''}">${fmtDate(base.dataProva)}</span>
+                  <span style="color:var(--text3);font-size:11px">vs</span>
+                  <span class="sim-val ${sameData?'same':nearData?'':'diff'}" style="${nearData&&!sameData?'background:var(--gold-bg);color:var(--gold)':''}">${fmtDate(c.dataProva)}</span>
+                </div>
+              </div>
+              <div class="sim-compare-row">
+                <span class="sim-compare-key">Remuneração</span>
+                <div class="sim-compare-vals">
+                  <span class="sim-val diff">${base.salario||'—'}</span>
+                  <span style="color:var(--text3);font-size:11px">vs</span>
+                  <span class="sim-val ${cSal&&baseSal&&Math.abs(cSal-baseSal)/baseSal<0.1?'same':'diff'}">${c.salario||'—'}</span>
+                  ${cSal && baseSal ? `<span style="font-size:11px;color:${cSal>baseSal?'var(--green)':'var(--rose)'}">${cSal>baseSal?'↑':'↓'} ${Math.round(Math.abs(cSal-baseSal)/100)*100 > 0 ? 'R$'+Math.round(Math.abs(cSal-baseSal)).toLocaleString('pt-BR') : 'igual'}</span>` : ''}
+                </div>
+              </div>
+              <div class="sim-compare-row">
+                <span class="sim-compare-key">Disciplinas</span>
+                <div class="sim-compare-vals">
+                  <span class="sim-val diff">${baseDiscs.length} disc.</span>
+                  <span style="color:var(--text3);font-size:11px">vs</span>
+                  <span class="sim-val diff">${cDiscsDisplay.length} disc.</span>
+                  <span style="font-size:11px;color:var(--green);font-weight:600">${sim.common.length} em comum</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- DISCIPLINAS EM COMUM -->
+            ${commonDiscsDisplay.length ? `
+            <div class="sim-section-title">✅ Disciplinas em Comum (${commonDiscsDisplay.length})</div>
+            <div class="sim-disc-list">
+              ${commonDiscsDisplay.map(d => `<span class="sim-disc-tag match">${d}</span>`).join('')}
+            </div>` : ''}
+
+            <!-- DISCIPLINAS DIFERENTES -->
+            ${diffDiscsDisplay.length ? `
+            <div class="sim-section-title">➕ Apenas em ${c.orgao||c.nome.split(' ')[0]} (${diffDiscsDisplay.length})</div>
+            <div class="sim-disc-list">
+              ${diffDiscsDisplay.slice(0,8).map(d => `<span class="sim-disc-tag nomatch">${d}</span>`).join('')}
+              ${diffDiscsDisplay.length > 8 ? `<span class="sim-disc-tag nomatch">+${diffDiscsDisplay.length-8} mais</span>` : ''}
+            </div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
 }
 
 // ===== TOAST =====
