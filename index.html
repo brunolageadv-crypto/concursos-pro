@@ -1304,6 +1304,7 @@ body {
       <p class="section-subtitle">Controle de estudos por concurso e simulados</p>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-secondary btn-sm" onclick="debugEstudos()">🔍 Diagnóstico</button>
       <button class="btn btn-secondary btn-sm" onclick="openModalSimulado()">📝 Registrar Simulado</button>
     </div>
   </div>
@@ -3686,6 +3687,41 @@ function renderSimilaridade() {
       }).join('')}
     </div>
   `;
+}
+
+
+// ===== DEBUG ESTUDOS =====
+function debugEstudos() {
+  let msg = '=== DIAGNÓSTICO DA ABA CONTROLE ===\n\n';
+  msg += 'Total de concursos carregados: ' + concursos.length + '\n\n';
+  
+  if (!concursos.length) {
+    msg += '⚠️ NENHUM CONCURSO CARREGADO!\n';
+    msg += 'Firebase conectado: ' + (db ? 'SIM' : 'NÃO') + '\n';
+    msg += 'Usuário logado: ' + (currentUser ? currentUser.uid : 'NÃO') + '\n';
+    msg += '\nTente recarregar a página e fazer login Google.';
+    alert(msg);
+    return;
+  }
+
+  concursos.forEach((c, i) => {
+    msg += `[${i+1}] ${c.nome}\n`;
+    msg += `  ID: ${c.id}\n`;
+    msg += `  discObjetiva: ${JSON.stringify(c.discObjetiva || [])}\n`;
+    msg += `  grupos: ${JSON.stringify(c.grupos || [])}\n`;
+    msg += `  hasObjetiva: ${c.hasObjetiva}\n`;
+    msg += `  estrutura: ${c.estrutura || 'não definida'}\n\n`;
+  });
+
+  // Also show what select currently has
+  const sel = document.getElementById('est-concurso-select');
+  msg += '\nSelect options: ' + sel.options.length + '\n';
+  for (let i = 0; i < sel.options.length; i++) {
+    msg += `  ${sel.options[i].value}: ${sel.options[i].text}\n`;
+  }
+
+  console.log(msg);
+  alert(msg);
 }
 
 // ===== TOAST =====
